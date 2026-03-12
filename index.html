@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ThreatScope | РђРЅР°Р»РёР· СЃРµС‚РµРІРѕРіРѕ С‚СЂР°С„РёРєР°</title>
-  <meta name="description" content="РџСЂРѕС‚РѕС‚РёРї РІРµР±-РёРЅС‚РµСЂС„РµР№СЃР° РґР»СЏ СЂР°РЅРЅРµРіРѕ РІС‹СЏРІР»РµРЅРёСЏ РєРёР±РµСЂСѓРіСЂРѕР· РїРѕ PCAP, CSV Рё С‚РµРєСЃС‚РѕРІС‹Рј РґР°С‚Р°СЃРµС‚Р°Рј.">
+  <title>ThreatScope | Анализ сетевого трафика</title>
+  <meta name="description" content="Прототип веб-интерфейса для раннего выявления киберугроз по PCAP, CSV и текстовым датасетам.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -333,10 +333,10 @@ pre {
           <span class="pill mono">Browser Analysis</span>
           <span class="pill mono">PCAP / TXT / CSV</span>
         </div>
-        <h1>Р Р°РЅРЅРµРµ РІС‹СЏРІР»РµРЅРёРµ СѓРіСЂРѕР· РІ СЃРµС‚РµРІРѕРј С‚СЂР°С„РёРєРµ</h1>
-        <p>Р—Р°РіСЂСѓР·РёС‚Рµ СЃРµС‚РµРІРѕР№ РґР°С‚Р°СЃРµС‚, Р° РёРЅС‚РµСЂС„РµР№СЃ Р»РѕРєР°Р»СЊРЅРѕ РѕРїСЂРµРґРµР»РёС‚ С‚РёРї С„Р°Р№Р»Р°, РІС‹РїРѕР»РЅРёС‚ Р±Р°Р·РѕРІС‹Р№ Р°РЅР°Р»РёР· Рё РїРѕРєР°Р¶РµС‚ Risk Score, IOC, СЃС‚Р°С‚РёСЃС‚РёРєСѓ Рё РіСЂР°С„РёРєРё Р±РµР· РѕС‚РїСЂР°РІРєРё РґР°РЅРЅС‹С… РЅР° СЃРµСЂРІРµСЂ.</p>
+        <h1>Раннее выявление угроз в сетевом трафике</h1>
+        <p>Загрузите сетевой датасет, а интерфейс локально определит тип файла, выполнит базовый анализ и покажет Risk Score, IOC, статистику и графики без отправки данных на сервер.</p>
         <div class="pills">
-          <span class="pill">РљР»Р°СЃСЃРёС‡РµСЃРєРёР№ PCAP</span>
+          <span class="pill">Классический PCAP</span>
           <span class="pill">PCAPNG</span>
           <span class="pill">CSV / TXT / LOG</span>
           <span class="pill">IPv4 / IPv6 / TCP / UDP</span>
@@ -345,79 +345,79 @@ pre {
       <aside class="hero-side">
         <div class="ring"><div><strong id="heroRisk">0</strong><span class="sub">Risk Score</span></div></div>
         <div class="stack">
-          <div>Р РµР¶РёРј: <strong id="mode">РћР¶РёРґР°РЅРёРµ Р·Р°РіСЂСѓР·РєРё</strong></div>
-          <div>Р”Р°С‚Р°СЃРµС‚: <strong id="datasetName">РќРµС‚ С„Р°Р№Р»Р°</strong></div>
-          <div class="sub">Р­РІСЂРёСЃС‚РёРєРё: С‚РѕРєРµРЅС‹, URL, РїРѕСЂС‚С‹ СЂРёСЃРєР°, С€РёСЂРѕРєРѕРІРµС‰Р°РЅРёРµ, РѕР±С…РѕРґ Р°РґСЂРµСЃРѕРІ Рё РїРѕСЂС‚РѕРІ.</div>
+          <div>Режим: <strong id="mode">Ожидание загрузки</strong></div>
+          <div>Датасет: <strong id="datasetName">Нет файла</strong></div>
+          <div class="sub">Эвристики: токены, URL, порты риска, широковещание, обход адресов и портов.</div>
         </div>
       </aside>
     </section>
 
     <section class="card grid top">
       <div>
-        <div class="head"><div><h2>Р—Р°РіСЂСѓР·РєР° РґР°С‚Р°СЃРµС‚Р°</h2><p class="sub">РџРµСЂРµС‚Р°С‰РёС‚Рµ С„Р°Р№Р» РёР»Рё РІС‹Р±РµСЂРёС‚Рµ РµРіРѕ РІСЂСѓС‡РЅСѓСЋ. РђРЅР°Р»РёР· Р·Р°РїСѓСЃРєР°РµС‚СЃСЏ СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ С‡С‚РµРЅРёСЏ РІ Р±СЂР°СѓР·РµСЂРµ.</p></div></div>
+        <div class="head"><div><h2>Загрузка датасета</h2><p class="sub">Перетащите файл или выберите его вручную. Анализ запускается сразу после чтения в браузере.</p></div></div>
         <label class="drop" id="dropZone">
           <input id="fileInput" type="file" accept=".pcap,.pcapng,.csv,.txt,.log,.json,.tsv">
           <div class="upload">
             <div>
-              <h2>РРјРїРѕСЂС‚ СЃРµС‚РµРІС‹С… РґР°РЅРЅС‹С…</h2>
-              <p class="sub">РџРѕРґРґРµСЂР¶РёРІР°СЋС‚СЃСЏ PCAP, PCAPNG, Р¶СѓСЂРЅР°Р»С‹, CSV Рё РґСЂСѓРіРёРµ С‚РµРєСЃС‚РѕРІС‹Рµ С„Р°Р№Р»С‹. РџРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё СЃРёСЃС‚РµРјР° Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р±РёСЂР°РµС‚ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ Р°Р»РіРѕСЂРёС‚Рј Р°РЅР°Р»РёР·Р°.</p>
+              <h2>Импорт сетевых данных</h2>
+              <p class="sub">Поддерживаются PCAP, PCAPNG, журналы, CSV и другие текстовые файлы. После загрузки система автоматически выбирает соответствующий алгоритм анализа.</p>
               <div class="btns">
-                <button type="button" class="primary" id="pickBtn">Р’С‹Р±СЂР°С‚СЊ С„Р°Р№Р»</button>
-                <button type="button" class="secondary" id="demoBtn">Р”РµРјРѕ-СЃС†РµРЅР°СЂРёР№</button>
+                <button type="button" class="primary" id="pickBtn">Выбрать файл</button>
+                <button type="button" class="secondary" id="demoBtn">Демо-сценарий</button>
               </div>
             </div>
             <div class="actions">
-              <div class="pill">Р›РѕРєР°Р»СЊРЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР°</div>
-              <div class="pill">Р‘РµР· backend API</div>
-              <div class="pill">РђРІС‚РѕРѕРїСЂРµРґРµР»РµРЅРёРµ С„РѕСЂРјР°С‚Р°</div>
+              <div class="pill">Локальная обработка</div>
+              <div class="pill">Без backend API</div>
+              <div class="pill">Автоопределение формата</div>
             </div>
           </div>
         </label>
       </div>
       <div>
-        <div class="head"><div><h2>РћРїРµСЂР°С‚РёРІРЅС‹Р№ СЃС‚Р°С‚СѓСЃ</h2><p class="sub">РЎРІРѕРґРєР° РїРѕ С‚РµРєСѓС‰РµРјСѓ РЅР°Р±РѕСЂСѓ РґР°РЅРЅС‹С… Рё Р°РєС‚РёРІРЅС‹Рј РґРµС‚РµРєС‚РѕСЂР°Рј.</p></div></div>
+        <div class="head"><div><h2>Оперативный статус</h2><p class="sub">Сводка по текущему набору данных и активным детекторам.</p></div></div>
         <div class="actions">
-          <div class="info"><strong id="statusTitle">РЎРёСЃС‚РµРјР° РіРѕС‚РѕРІР° Рє Р°РЅР°Р»РёР·Сѓ</strong><p id="statusText">Р—Р°РіСЂСѓР·РёС‚Рµ С„Р°Р№Р», С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ РїРѕРєР°Р·Р°С‚РµР»Рё, РёРЅРґРёРєР°С‚РѕСЂС‹, РіСЂР°С„РёРєРё Рё РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅС‹Р№ РїСЂРѕСЃРјРѕС‚СЂ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ.</p></div>
-          <div class="info"><strong>РђРєС‚РёРІРЅС‹Рµ РґРµС‚РµРєС‚РѕСЂС‹</strong><ul><li>РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Рµ С‚РѕРєРµРЅС‹, URL, РєРѕРјР°РЅРґС‹ Рё IOC РІ С‚РµРєСЃС‚РѕРІС‹С… РёСЃС‚РѕС‡РЅРёРєР°С…</li><li>РџРѕСЂС‚С‹ РїРѕРІС‹С€РµРЅРЅРѕРіРѕ СЂРёСЃРєР° Рё С‡Р°СЃС‚РѕС‚РЅС‹Рµ Р°РЅРѕРјР°Р»РёРё РІ С‚СЂР°С„РёРєРµ</li><li>РЎРєР°РЅРёСЂРѕРІР°РЅРёРµ РїРѕ Р°РґСЂРµСЃР°Рј Рё РїРѕСЂС‚Р°Рј, РґРѕРјРёРЅРёСЂСѓСЋС‰РёРµ СѓР·Р»С‹</li></ul></div>
+          <div class="info"><strong id="statusTitle">Система готова к анализу</strong><p id="statusText">Загрузите файл, чтобы получить показатели, индикаторы, графики и предварительный просмотр содержимого.</p></div>
+          <div class="info"><strong>Активные детекторы</strong><ul><li>Подозрительные токены, URL, команды и IOC в текстовых источниках</li><li>Порты повышенного риска и частотные аномалии в трафике</li><li>Сканирование по адресам и портам, доминирующие узлы</li></ul></div>
         </div>
       </div>
     </section>
 
     <section class="card">
-      <div class="head"><div><h2>РљР»СЋС‡РµРІС‹Рµ РїРѕРєР°Р·Р°С‚РµР»Рё Р°РЅР°Р»РёР·Р°</h2><p class="sub">Р РёСЃРє Рё СЃС‚Р°С‚РёСЃС‚РёРєР° РѕР±РЅРѕРІР»СЏСЋС‚СЃСЏ РїРѕСЃР»Рµ РєР°Р¶РґРѕРіРѕ Р·Р°РїСѓСЃРєР°.</p></div></div>
+      <div class="head"><div><h2>Ключевые показатели анализа</h2><p class="sub">Риск и статистика обновляются после каждого запуска.</p></div></div>
       <div class="metrics">
-        <article class="metric"><span>Risk Score</span><strong id="riskValue">0</strong><small id="riskText">РћР¶РёРґР°РЅРёРµ РґР°РЅРЅС‹С…</small></article>
-        <article class="metric"><span>Р Р°Р·РјРµСЂ РґР°С‚Р°СЃРµС‚Р°</span><strong id="sizeValue">0 B</strong><small id="typeText">РўРёРї РЅРµ РѕРїСЂРµРґРµР»С‘РЅ</small></article>
-        <article class="metric"><span>РЎС‚СЂРѕРєРё / РџР°РєРµС‚С‹</span><strong id="recordsValue">0</strong><small id="recordsText">РќРµС‚ РѕР±СЂР°Р±РѕС‚Р°РЅРЅС‹С… Р·Р°РїРёСЃРµР№</small></article>
-        <article class="metric"><span>РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Рµ СЃРѕРІРїР°РґРµРЅРёСЏ</span><strong id="matchesValue">0</strong><small id="matchesText">IOC РїРѕРєР° РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅС‹</small></article>
+        <article class="metric"><span>Risk Score</span><strong id="riskValue">0</strong><small id="riskText">Ожидание данных</small></article>
+        <article class="metric"><span>Размер датасета</span><strong id="sizeValue">0 B</strong><small id="typeText">Тип не определён</small></article>
+        <article class="metric"><span>Строки / Пакеты</span><strong id="recordsValue">0</strong><small id="recordsText">Нет обработанных записей</small></article>
+        <article class="metric"><span>Подозрительные совпадения</span><strong id="matchesValue">0</strong><small id="matchesText">IOC пока не обнаружены</small></article>
       </div>
     </section>
 
     <section class="card two-col">
       <div>
-        <div class="head"><div><h2>Р’РёР·СѓР°Р»РёР·Р°С†РёСЏ СЂРµР·СѓР»СЊС‚Р°С‚Р°</h2><p class="sub">Р”Р»СЏ С‚РµРєСЃС‚Р° РїРѕРєР°Р·С‹РІР°РµС‚СЃСЏ СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ С‚РѕРєРµРЅРѕРІ, РґР»СЏ С‚СЂР°С„РёРєР° СЃСЂРµР· РїРѕ РёРЅРґРёРєР°С‚РѕСЂР°Рј Рё РґРѕР»СЏ РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅРѕРіРѕ С‚СЂР°С„РёРєР°.</p></div></div>
+        <div class="head"><div><h2>Визуализация результата</h2><p class="sub">Для текста показывается распределение токенов, для трафика срез по индикаторам и доля подозрительного трафика.</p></div></div>
         <div class="charts">
-          <div class="chart"><h3 id="barTitle">Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РёРЅРґРёРєР°С‚РѕСЂРѕРІ</h3><div class="canvas"><canvas id="barChart"></canvas></div></div>
-          <div class="chart"><h3 id="doughnutTitle">РќРѕСЂРјР°Р»СЊРЅС‹Р№ Рё РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№ С‚СЂР°С„РёРє</h3><div class="canvas"><canvas id="doughnutChart"></canvas></div></div>
+          <div class="chart"><h3 id="barTitle">Распределение индикаторов</h3><div class="canvas"><canvas id="barChart"></canvas></div></div>
+          <div class="chart"><h3 id="doughnutTitle">Нормальный и подозрительный трафик</h3><div class="canvas"><canvas id="doughnutChart"></canvas></div></div>
         </div>
       </div>
       <div>
-        <div class="head"><div><h2>РРЅРґРёРєР°С‚РѕСЂС‹ Рё РїСЂРѕС„РёР»СЊ С‚СЂР°С„РёРєР°</h2><p class="sub">РЎРїРёСЃРѕРє IOC Рё РєСЂР°С‚РєР°СЏ Р°РЅР°Р»РёС‚РёРєР° РїРѕ Р°РґСЂРµСЃР°Рј, РїРѕСЂС‚Р°Рј Рё Р°РєС‚РёРІРЅРѕСЃС‚Рё.</p></div></div>
+        <div class="head"><div><h2>Индикаторы и профиль трафика</h2><p class="sub">Список IOC и краткая аналитика по адресам, портам и активности.</p></div></div>
         <div class="lists" id="indicatorList"></div>
-        <div class="head"><div><h3>РџСЂРѕС„РёР»СЊ</h3></div></div>
+        <div class="head"><div><h3>Профиль</h3></div></div>
         <div class="lists" id="networkList"></div>
       </div>
     </section>
 
     <section class="card">
-      <div class="head"><div><h2>РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅС‹Р№ РїСЂРѕСЃРјРѕС‚СЂ РґР°РЅРЅС‹С…</h2><p class="sub">Р”Р»СЏ С‚РµРєСЃС‚РѕРІС‹С… С„Р°Р№Р»РѕРІ РїРѕРєР°Р·С‹РІР°РµС‚СЃСЏ С„СЂР°РіРјРµРЅС‚ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ, РґР»СЏ PCAP вЂ” Р¶СѓСЂРЅР°Р» СЂР°Р·Р±РѕСЂР° РїР°РєРµС‚РѕРІ Рё СЃРµС‚РµРІС‹С… СЃСѓС‰РЅРѕСЃС‚РµР№.</p></div></div>
+      <div class="head"><div><h2>Предварительный просмотр данных</h2><p class="sub">Для текстовых файлов показывается фрагмент содержимого, для PCAP — журнал разбора пакетов и сетевых сущностей.</p></div></div>
       <div class="preview">
-        <div class="preview-head"><strong id="previewName" class="mono">dataset-preview.log</strong><span class="pill" id="previewType">РќРµС‚ Р°РєС‚РёРІРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°</span></div>
-        <pre id="previewText">РћР¶РёРґР°РЅРёРµ С„Р°Р№Р»Р°. Р—Р°РіСЂСѓР·РёС‚Рµ PCAP, PCAPNG, CSV, TXT РёР»Рё LOG РґР»СЏ Р·Р°РїСѓСЃРєР° Р°РЅР°Р»РёР·Р°.</pre>
+        <div class="preview-head"><strong id="previewName" class="mono">dataset-preview.log</strong><span class="pill" id="previewType">Нет активного источника</span></div>
+        <pre id="previewText">Ожидание файла. Загрузите PCAP, PCAPNG, CSV, TXT или LOG для запуска анализа.</pre>
       </div>
     </section>
 
-    <p class="foot">РРЅС‚РµСЂС„РµР№СЃ РїСЂРµРґРЅР°Р·РЅР°С‡РµРЅ РґР»СЏ РїРµСЂРІРёС‡РЅРѕРіРѕ Р±СЂР°СѓР·РµСЂРЅРѕРіРѕ Р°РЅР°Р»РёР·Р° Рё Р±С‹СЃС‚СЂРѕР№ РІРёР·СѓР°Р»СЊРЅРѕР№ РѕС†РµРЅРєРё СѓРіСЂРѕР·. Р РµР·СѓР»СЊС‚Р°С‚С‹ РЅРѕСЃСЏС‚ СЌРІСЂРёСЃС‚РёС‡РµСЃРєРёР№ С…Р°СЂР°РєС‚РµСЂ Рё РЅРµ Р·Р°РјРµРЅСЏСЋС‚ РіР»СѓР±РѕРєРёР№ С„РѕСЂРµРЅР·РёРє РёР»Рё IDS/IPS.</p>
+    <p class="foot">Интерфейс предназначен для первичного браузерного анализа и быстрой визуальной оценки угроз. Результаты носят эвристический характер и не заменяют глубокий форензик или IDS/IPS.</p>
   </div>
   <script>
 const $ = (id) => document.getElementById(id);
@@ -518,18 +518,18 @@ async function handleFile(file) {
       : analyzeText(new TextDecoder("utf-8", { fatal: false }).decode(buffer), file, type.kind);
     updateUI(result);
   } catch (error) {
-    renderError(error instanceof Error ? error.message : "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±СЂР°Р±РѕС‚Р°С‚СЊ С„Р°Р№Р».");
+    renderError(error instanceof Error ? error.message : "Не удалось обработать файл.");
   }
 }
 
 function setLoading(name) {
-  ui.mode.textContent = "РРґС‘С‚ Р°РЅР°Р»РёР·";
+  ui.mode.textContent = "Идёт анализ";
   ui.dataset.textContent = name;
-  ui.statusTitle.textContent = "Р’С‹РїРѕР»РЅСЏРµС‚СЃСЏ С‡С‚РµРЅРёРµ Рё Р°РЅР°Р»РёР· РґР°РЅРЅС‹С…";
-  ui.statusText.textContent = "РЎРёСЃС‚РµРјР° РѕРїСЂРµРґРµР»СЏРµС‚ С„РѕСЂРјР°С‚ С„Р°Р№Р»Р°, СЃС‚СЂРѕРёС‚ СЃС‚Р°С‚РёСЃС‚РёРєСѓ Рё РїРѕРґРіРѕС‚Р°РІР»РёРІР°РµС‚ РІРёР·СѓР°Р»РёР·Р°С†РёСЋ.";
+  ui.statusTitle.textContent = "Выполняется чтение и анализ данных";
+  ui.statusText.textContent = "Система определяет формат файла, строит статистику и подготавливает визуализацию.";
   ui.previewName.textContent = name;
-  ui.previewType.textContent = "РђРЅР°Р»РёР·";
-  ui.preview.textContent = "РРґС‘С‚ РїРѕРґРіРѕС‚РѕРІРєР° СЂРµР·СѓР»СЊС‚Р°С‚Р°...";
+  ui.previewType.textContent = "Анализ";
+  ui.preview.textContent = "Идёт подготовка результата...";
 }
 
 function detectType(file, buffer) {
@@ -556,7 +556,7 @@ function analyzeText(text, file, kind) {
         counts.set(p.label, (counts.get(p.label) || 0) + 1);
         indicators.push({
           title: p.label,
-          description: `РЎС‚СЂРѕРєР° ${i + 1}: ${truncate(line.trim() || "(РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°)", 140)}`,
+          description: `Строка ${i + 1}: ${truncate(line.trim() || "(пустая строка)", 140)}`,
           meta: `severity=${p.severity}`
         });
       }
@@ -571,31 +571,31 @@ function analyzeText(text, file, kind) {
   return {
     dataset: file.name,
     size: file.size,
-    type: kind === "csv" ? "CSV / С‚РµРєСЃС‚РѕРІР°СЏ С‚Р°Р±Р»РёС†Р°" : "РўРµРєСЃС‚РѕРІС‹Р№ РґР°С‚Р°СЃРµС‚",
-    mode: "РўРµРєСЃС‚РѕРІС‹Р№ Р°РЅР°Р»РёР·",
+    type: kind === "csv" ? "CSV / текстовая таблица" : "Текстовый датасет",
+    mode: "Текстовый анализ",
     risk,
     records: lines.length,
-    recordsLabel: "РЎС‚СЂРѕРєРё",
+    recordsLabel: "Строки",
     matches,
-    matchText: matches ? `${matches} СЃРѕРІРїР°РґРµРЅРёР№ РїРѕ СЌРІСЂРёСЃС‚РёРєР°Рј` : "РћРїР°СЃРЅС‹Рµ С‚РѕРєРµРЅС‹ РЅРµ РЅР°Р№РґРµРЅС‹",
-    recordMeta: `РќРµРїСѓСЃС‚С‹С… СЃС‚СЂРѕРє: ${nonEmpty}`,
-    typeMeta: `РЎС‚РѕР»Р±С†РѕРІ: ${cols}`,
-    statusTitle: matches ? "РўРµРєСЃС‚РѕРІС‹Р№ РґР°С‚Р°СЃРµС‚ РѕР±СЂР°Р±РѕС‚Р°РЅ, РїСЂРёР·РЅР°РєРё СЂРёСЃРєР° РѕР±РЅР°СЂСѓР¶РµРЅС‹" : "РўРµРєСЃС‚РѕРІС‹Р№ РґР°С‚Р°СЃРµС‚ РѕР±СЂР°Р±РѕС‚Р°РЅ, РєСЂРёС‚РёС‡РЅС‹С… СЃРѕРІРїР°РґРµРЅРёР№ РЅРµС‚",
-    statusText: matches ? "РќР°Р№РґРµРЅС‹ РєРѕРјР°РЅРґС‹, URL Рё СЃРёРіРЅР°Р»С‹, С…Р°СЂР°РєС‚РµСЂРЅС‹Рµ РґР»СЏ РІСЂРµРґРѕРЅРѕСЃРЅРѕР№ Р°РєС‚РёРІРЅРѕСЃС‚Рё." : "Р’ РїРµСЂРІС‹С… СЌРІСЂРёСЃС‚РёРєР°С… РІС‹СЂР°Р¶РµРЅРЅС‹Рµ СЃРёРіРЅР°С‚СѓСЂС‹ РІСЂРµРґРѕРЅРѕСЃРЅРѕР№ Р°РєС‚РёРІРЅРѕСЃС‚Рё РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅС‹.",
+    matchText: matches ? `${matches} совпадений по эвристикам` : "Опасные токены не найдены",
+    recordMeta: `Непустых строк: ${nonEmpty}`,
+    typeMeta: `Столбцов: ${cols}`,
+    statusTitle: matches ? "Текстовый датасет обработан, признаки риска обнаружены" : "Текстовый датасет обработан, критичных совпадений нет",
+    statusText: matches ? "Найдены команды, URL и сигналы, характерные для вредоносной активности." : "В первых эвристиках выраженные сигнатуры вредоносной активности не обнаружены.",
     previewType: kind === "csv" ? "CSV preview" : "Text preview",
-    preview: lines.slice(0, 18).map((line, i) => `${String(i + 1).padStart(3, "0")} | ${line}`).join("\n") || "Р¤Р°Р№Р» РїСѓСЃС‚.",
+    preview: lines.slice(0, 18).map((line, i) => `${String(i + 1).padStart(3, "0")} | ${line}`).join("\n") || "Файл пуст.",
     indicators: indicators.slice(0, 10),
     network: [
-      { title: "Р¤РѕСЂРјР°С‚ РёСЃС‚РѕС‡РЅРёРєР°", description: kind === "csv" ? "РЎС‚СЂСѓРєС‚СѓСЂРёСЂРѕРІР°РЅРЅС‹Р№ С‚РµРєСЃС‚РѕРІС‹Р№ РґР°С‚Р°СЃРµС‚." : "РќРµСЃС‚СЂСѓРєС‚СѓСЂРёСЂРѕРІР°РЅРЅС‹Р№ Р¶СѓСЂРЅР°Р» РёР»Рё С‚РµРєСЃС‚РѕРІС‹Р№ СЌРєСЃРїРѕСЂС‚.", meta: `columns=${cols}` },
-      { title: "РќРµРїСѓСЃС‚С‹Рµ СЃС‚СЂРѕРєРё", description: `${nonEmpty} РёР· ${lines.length} СЃС‚СЂРѕРє СЃРѕРґРµСЂР¶Р°С‚ РґР°РЅРЅС‹Рµ.`, meta: "line-density" },
-      { title: "РЈРЅРёРєР°Р»СЊРЅС‹Рµ С‚РѕРєРµРЅС‹", description: `${sorted.length} РґРµС‚РµРєС‚РѕСЂРѕРІ СЃСЂР°Р±РѕС‚Р°Р»Рё С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ СЂР°Р·.`, meta: "ioc-spectrum" }
+      { title: "Формат источника", description: kind === "csv" ? "Структурированный текстовый датасет." : "Неструктурированный журнал или текстовый экспорт.", meta: `columns=${cols}` },
+      { title: "Непустые строки", description: `${nonEmpty} из ${lines.length} строк содержат данные.`, meta: "line-density" },
+      { title: "Уникальные токены", description: `${sorted.length} детекторов сработали хотя бы один раз.`, meta: "ioc-spectrum" }
     ],
     chart: {
-      barTitle: "Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹С… С‚РѕРєРµРЅРѕРІ",
-      doughnutTitle: "РќРѕСЂРјР°Р»СЊРЅС‹Рµ Рё РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Рµ СЃС‚СЂРѕРєРё",
+      barTitle: "Распределение подозрительных токенов",
+      doughnutTitle: "Нормальные и подозрительные строки",
       barLabels: sorted.map(([k]) => k),
       barValues: sorted.map(([, v]) => v),
-      doughnutLabels: ["РќРѕСЂРјР°Р»СЊРЅС‹Рµ", "РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Рµ"],
+      doughnutLabels: ["Нормальные", "Подозрительные"],
       doughnutValues: [Math.max(lines.length - Math.min(lines.length, matches), 0), Math.min(lines.length, matches)]
     }
   };
@@ -633,7 +633,7 @@ function analyzePcap(buffer, file) {
   const le = sig === "d4c3b2a1" || sig === "4d3cb2a1";
   const link = view.getUint32(20, le);
   let off = 24;
-  const s = createStats(file, `РљР»Р°СЃСЃРёС‡РµСЃРєРёР№ PCAP linktype=${link}`);
+  const s = createStats(file, `Классический PCAP linktype=${link}`);
 
   while (off + 16 <= buffer.byteLength) {
     const sec = view.getUint32(off, le);
@@ -715,14 +715,14 @@ function processPacket(stats, data, linkType, ts) {
 
   let suspicious = false;
   if (Number.isFinite(packet.dstPort) && riskyPorts.has(packet.dstPort)) {
-    const label = `РџРѕСЂС‚ ${packet.dstPort} (${riskyPorts.get(packet.dstPort)})`;
+    const label = `Порт ${packet.dstPort} (${riskyPorts.get(packet.dstPort)})`;
     stats.indicators.set(label, (stats.indicators.get(label) || 0) + 1);
     stats.suspiciousHits += 1;
     suspicious = true;
   }
 
   if (packet.isBroadcast) {
-    stats.indicators.set("РЁРёСЂРѕРєРѕРІРµС‰Р°С‚РµР»СЊРЅС‹Р№ С‚СЂР°С„РёРє", (stats.indicators.get("РЁРёСЂРѕРєРѕРІРµС‰Р°С‚РµР»СЊРЅС‹Р№ С‚СЂР°С„РёРє") || 0) + 1);
+    stats.indicators.set("Широковещательный трафик", (stats.indicators.get("Широковещательный трафик") || 0) + 1);
     stats.suspiciousHits += 1;
     suspicious = true;
   }
@@ -746,17 +746,17 @@ function finalizeStats(stats, dataset) {
 
   stats.srcDest.forEach((set, src) => {
     if (set.size >= 8) {
-      const label = "РЁРёСЂРѕРєРёР№ РѕР±С…РѕРґ Р°РґСЂРµСЃРѕРІ";
+      const label = "Широкий обход адресов";
       stats.indicators.set(label, (stats.indicators.get(label) || 0) + set.size);
-      scanFindings.push({ title: label, description: `${src} РѕР±СЂР°С‰Р°РµС‚СЃСЏ Рє ${set.size} СѓРЅРёРєР°Р»СЊРЅС‹Рј СѓР·Р»Р°Рј.`, meta: "scan-heuristic" });
+      scanFindings.push({ title: label, description: `${src} обращается к ${set.size} уникальным узлам.`, meta: "scan-heuristic" });
     }
   });
 
   stats.srcPorts.forEach((set, src) => {
     if (set.size >= 10) {
-      const label = "РЎРєР°РЅРёСЂРѕРІР°РЅРёРµ РїРѕ РїРѕСЂС‚Р°Рј";
+      const label = "Сканирование по портам";
       stats.indicators.set(label, (stats.indicators.get(label) || 0) + set.size);
-      scanFindings.push({ title: label, description: `${src} РёСЃРїРѕР»СЊР·СѓРµС‚ ${set.size} СЂР°Р·Р»РёС‡РЅС‹С… РїРѕСЂС‚РѕРІ РЅР°Р·РЅР°С‡РµРЅРёСЏ.`, meta: "port-sweep" });
+      scanFindings.push({ title: label, description: `${src} использует ${set.size} различных портов назначения.`, meta: "port-sweep" });
     }
   });
 
@@ -778,7 +778,7 @@ function finalizeStats(stats, dataset) {
   const indicatorList = [
     ...indicators.slice(0, 7).map(([title, v]) => ({
       title,
-      description: `РћР±РЅР°СЂСѓР¶РµРЅРѕ ${v} СЃРѕРІРїР°РґРµРЅРёР№ РІ РїР°РєРµС‚Р°С… Рё СЃРµС‚РµРІС‹С… СЃРѕР±С‹С‚РёСЏС….`,
+      description: `Обнаружено ${v} совпадений в пакетах и сетевых событиях.`,
       meta: "traffic-indicator"
     })),
     ...scanFindings
@@ -788,30 +788,30 @@ function finalizeStats(stats, dataset) {
     dataset,
     size: stats.size,
     type: stats.type,
-    mode: "РђРЅР°Р»РёР· СЃРµС‚РµРІРѕРіРѕ С‚СЂР°С„РёРєР°",
+    mode: "Анализ сетевого трафика",
     risk,
     records: stats.packets,
-    recordsLabel: "РџР°РєРµС‚С‹",
+    recordsLabel: "Пакеты",
     matches: stats.suspiciousHits + scanFindings.length,
-    matchText: stats.suspiciousHits ? `${stats.suspiciousHits} СЃРµС‚РµРІС‹С… СЃРѕРІРїР°РґРµРЅРёР№ Рё ${scanFindings.length} СЌРІСЂРёСЃС‚РёРє` : "РљСЂРёС‚РёС‡РЅС‹С… СЃРµС‚РµРІС‹С… СЃРѕРІРїР°РґРµРЅРёР№ РЅРµ РІС‹СЏРІР»РµРЅРѕ",
+    matchText: stats.suspiciousHits ? `${stats.suspiciousHits} сетевых совпадений и ${scanFindings.length} эвристик` : "Критичных сетевых совпадений не выявлено",
     recordMeta: `IPv4: ${stats.ipv4}, IPv6: ${stats.ipv6}`,
-    typeMeta: `РџСЂРѕС‚РѕРєРѕР»РѕРІ: ${protocols.length}`,
-    statusTitle: stats.packets ? "Р—Р°С…РІР°С‚ С‚СЂР°С„РёРєР° РѕР±СЂР°Р±РѕС‚Р°РЅ" : "Р¤Р°Р№Р» СЂР°СЃРїРѕР·РЅР°РЅ, РЅРѕ РїР°РєРµС‚С‹ РЅРµ РёР·РІР»РµС‡РµРЅС‹",
-    statusText: stats.packets ? "РЎС„РѕСЂРјРёСЂРѕРІР°РЅР° СЃС‚Р°С‚РёСЃС‚РёРєР° РїР°РєРµС‚РѕРІ, Р°РґСЂРµСЃРѕРІ, РїРѕСЂС‚РѕРІ Рё РІРѕР·РјРѕР¶РЅС‹С… СЃРµС‚РµРІС‹С… РѕС‚РєР»РѕРЅРµРЅРёР№." : "РџСЂРѕС‚РѕС‚РёРї Р»СѓС‡С€Рµ РІСЃРµРіРѕ СЂР°Р±РѕС‚Р°РµС‚ СЃ РєР»Р°СЃСЃРёС‡РµСЃРєРёРј PCAP Рё Р±Р°Р·РѕРІС‹Рј PCAPNG.",
+    typeMeta: `Протоколов: ${protocols.length}`,
+    statusTitle: stats.packets ? "Захват трафика обработан" : "Файл распознан, но пакеты не извлечены",
+    statusText: stats.packets ? "Сформирована статистика пакетов, адресов, портов и возможных сетевых отклонений." : "Прототип лучше всего работает с классическим PCAP и базовым PCAPNG.",
     previewType: stats.type,
-    preview: `${previewHead}${stats.preview.join("\n") || "РџР°РєРµС‚С‹ РЅРµ РѕС‚РѕР±СЂР°Р¶РµРЅС‹."}`,
-    indicators: indicatorList.length ? indicatorList : [{ title: "РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Рµ РёРЅРґРёРєР°С‚РѕСЂС‹ РЅРµ РЅР°Р№РґРµРЅС‹", description: "Р’ С‚РµРєСѓС‰РµРј РѕРєРЅРµ Р°РЅР°Р»РёР·Р° РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅРѕ РІС‹СЂР°Р¶РµРЅРЅС‹С… СЃРµС‚РµРІС‹С… IOC.", meta: "clean-window" }],
+    preview: `${previewHead}${stats.preview.join("\n") || "Пакеты не отображены."}`,
+    indicators: indicatorList.length ? indicatorList : [{ title: "Подозрительные индикаторы не найдены", description: "В текущем окне анализа не обнаружено выраженных сетевых IOC.", meta: "clean-window" }],
     network: [
-      { title: "Р’РµРґСѓС‰РёРµ РёСЃС‚РѕС‡РЅРёРєРё", description: topSrc.map(([host, c]) => `${host} (${c})`).join(", ") || "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РґР°РЅРЅС‹С….", meta: "top-src" },
-      { title: "Р’РµРґСѓС‰РёРµ РЅР°Р·РЅР°С‡РµРЅРёСЏ", description: topDst.map(([host, c]) => `${host} (${c})`).join(", ") || "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РґР°РЅРЅС‹С….", meta: "top-dst" },
-      { title: "РРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ", description: `${rate.toFixed(2)} РїР°Рє/СЃРµРє, РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РѕРєРЅР° ${duration.toFixed(2)} СЃРµРє.`, meta: "rate-profile" }
+      { title: "Ведущие источники", description: topSrc.map(([host, c]) => `${host} (${c})`).join(", ") || "Недостаточно данных.", meta: "top-src" },
+      { title: "Ведущие назначения", description: topDst.map(([host, c]) => `${host} (${c})`).join(", ") || "Недостаточно данных.", meta: "top-dst" },
+      { title: "Интенсивность", description: `${rate.toFixed(2)} пак/сек, длительность окна ${duration.toFixed(2)} сек.`, meta: "rate-profile" }
     ],
     chart: {
-      barTitle: "Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ СЃРµС‚РµРІС‹С… РёРЅРґРёРєР°С‚РѕСЂРѕРІ",
-      doughnutTitle: "РќРѕСЂРјР°Р»СЊРЅС‹Р№ Рё РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№ С‚СЂР°С„РёРє",
+      barTitle: "Распределение сетевых индикаторов",
+      doughnutTitle: "Нормальный и подозрительный трафик",
       barLabels: (indicators.length ? indicators : protocols).slice(0, 8).map(([k]) => k),
       barValues: (indicators.length ? indicators : protocols).slice(0, 8).map(([, v]) => v),
-      doughnutLabels: ["РќРѕСЂРјР°Р»СЊРЅС‹Р№", "РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№"],
+      doughnutLabels: ["Нормальный", "Подозрительный"],
       doughnutValues: [Math.max(stats.packets - stats.suspiciousPackets, 0), stats.suspiciousPackets]
     }
   };
@@ -903,8 +903,8 @@ function updateUI(result) {
   ui.preview.textContent = result.preview;
   ui.barTitle.textContent = result.chart.barTitle;
   ui.doughnutTitle.textContent = result.chart.doughnutTitle;
-  renderList(ui.indicatorList, result.indicators, "РРЅРґРёРєР°С‚РѕСЂС‹ РїРѕРєР° РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅС‹");
-  renderList(ui.networkList, result.network, "РЎРµС‚РµРІРѕР№ РїСЂРѕС„РёР»СЊ Р±СѓРґРµС‚ РґРѕСЃС‚СѓРїРµРЅ РїРѕСЃР»Рµ Р°РЅР°Р»РёР·Р°");
+  renderList(ui.indicatorList, result.indicators, "Индикаторы пока не обнаружены");
+  renderList(ui.networkList, result.network, "Сетевой профиль будет доступен после анализа");
   renderCharts(result.chart);
 }
 
@@ -925,7 +925,7 @@ function renderCharts(data) {
   charts.bar = new Chart($("barChart"), {
     type: "bar",
     data: {
-      labels: data.barLabels.length ? data.barLabels : ["РќРµС‚ РґР°РЅРЅС‹С…"],
+      labels: data.barLabels.length ? data.barLabels : ["Нет данных"],
       datasets: [{
         label: "Count",
         data: data.barValues.length ? data.barValues : [0],
@@ -960,22 +960,22 @@ function renderCharts(data) {
 
 function renderList(node, items, empty) {
   node.innerHTML = (!items || !items.length)
-    ? `<div class="item"><strong>${empty}</strong><span>Р—Р°РіСЂСѓР·РёС‚Рµ РґР°С‚Р°СЃРµС‚, С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ Р°РЅР°Р»РёС‚РёС‡РµСЃРєРёР№ РїСЂРѕС„РёР»СЊ.</span><small>awaiting-input</small></div>`
+    ? `<div class="item"><strong>${empty}</strong><span>Загрузите датасет, чтобы получить аналитический профиль.</span><small>awaiting-input</small></div>`
     : items.map((item) => `<article class="item"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.description)}</span><small>${escapeHtml(item.meta || "analysis")}</small></article>`).join("");
 }
 
 function renderError(message) {
-  ui.mode.textContent = "РћС€РёР±РєР° Р°РЅР°Р»РёР·Р°";
-  ui.statusTitle.textContent = "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±СЂР°Р±РѕС‚Р°С‚СЊ С„Р°Р№Р»";
+  ui.mode.textContent = "Ошибка анализа";
+  ui.statusTitle.textContent = "Не удалось обработать файл";
   ui.statusText.textContent = message;
   ui.previewType.textContent = "Error";
   ui.preview.textContent = message;
   ui.risk.textContent = "0";
-  ui.riskText.textContent = "РћС€РёР±РєР°";
+  ui.riskText.textContent = "Ошибка";
 }
 
 function riskText(score) {
-  return score >= 75 ? "Р’С‹СЃРѕРєРёР№ СЂРёСЃРє: РІРµСЂРѕСЏС‚РЅР° РІСЂРµРґРѕРЅРѕСЃРЅР°СЏ Р°РєС‚РёРІРЅРѕСЃС‚СЊ" : score >= 40 ? "РЎСЂРµРґРЅРёР№ СЂРёСЃРє: С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРѕРІРµСЂРєР° Р°РЅР°Р»РёС‚РёРєРѕРј" : "РќРёР·РєРёР№ СЂРёСЃРє: РІС‹СЂР°Р¶РµРЅРЅС‹С… СѓРіСЂРѕР· РЅРµРјРЅРѕРіРѕ";
+  return score >= 75 ? "Высокий риск: вероятна вредоносная активность" : score >= 40 ? "Средний риск: требуется проверка аналитиком" : "Низкий риск: выраженных угроз немного";
 }
 
 function riskClass(score) {
@@ -1032,17 +1032,18 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-renderList(ui.indicatorList, [], "РРЅРґРёРєР°С‚РѕСЂС‹ РїРѕРєР° РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅС‹");
-renderList(ui.networkList, [], "РЎРµС‚РµРІРѕР№ РїСЂРѕС„РёР»СЊ РїСѓСЃС‚");
+renderList(ui.indicatorList, [], "Индикаторы пока не обнаружены");
+renderList(ui.networkList, [], "Сетевой профиль пуст");
 renderCharts({
-  barLabels: ["РћР¶РёРґР°РЅРёРµ"],
+  barLabels: ["Ожидание"],
   barValues: [0],
-  doughnutLabels: ["РќРѕСЂРјР°Р»СЊРЅС‹Р№", "РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№"],
+  doughnutLabels: ["Нормальный", "Подозрительный"],
   doughnutValues: [1, 0],
-  barTitle: "Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РёРЅРґРёРєР°С‚РѕСЂРѕРІ",
-  doughnutTitle: "РќРѕСЂРјР°Р»СЊРЅС‹Р№ Рё РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№ С‚СЂР°С„РёРє"
+  barTitle: "Распределение индикаторов",
+  doughnutTitle: "Нормальный и подозрительный трафик"
 });
 
 </script>
 </body>
 </html>
+
