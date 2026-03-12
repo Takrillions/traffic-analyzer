@@ -1,57 +1,145 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Network Traffic Risk Analyzer</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/pcap-parser/dist/pcap-parser.min.js"></script>
 
 <style>
-body{margin:0;font-family:Arial, Helvetica, sans-serif;background:#0b0f14;color:#e8eef6}
-header{padding:18px;background:#0e141d;border-bottom:1px solid #1b2533;font-size:20px}
-main{max-width:1100px;margin:auto;padding:16px}
-.card{background:#0e141d;border:1px solid #1b2533;border-radius:10px;padding:16px;margin-bottom:16px}
-input,button{background:#172235;color:#fff;border:1px solid #22314a;border-radius:6px;padding:8px 12px;cursor:pointer}
-button:hover{background:#1d2f4a}
-.bar{height:12px;background:#1b2533;border-radius:10px;overflow:hidden;margin-top:8px}
-.bar div{height:12px;background:#2b6cb0;width:0%}
-pre{background:#0b0f14;border:1px solid #1b2533;border-radius:8px;padding:10px;max-height:260px;overflow:auto}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+body{
+margin:0;
+font-family:Arial, Helvetica, sans-serif;
+background:#0b0f14;
+color:#e8eef6;
+}
+
+header{
+padding:18px;
+background:#0e141d;
+border-bottom:1px solid #1b2533;
+font-size:20px;
+}
+
+main{
+max-width:1100px;
+margin:auto;
+padding:16px;
+}
+
+.card{
+background:#0e141d;
+border:1px solid #1b2533;
+border-radius:10px;
+padding:16px;
+margin-bottom:16px;
+}
+
+input,button{
+background:#172235;
+color:#fff;
+border:1px solid #22314a;
+border-radius:6px;
+padding:8px 12px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1d2f4a;
+}
+
+.bar{
+height:12px;
+background:#1b2533;
+border-radius:10px;
+overflow:hidden;
+margin-top:8px;
+}
+
+.bar div{
+height:12px;
+background:#2b6cb0;
+width:0%;
+}
+
+pre{
+background:#0b0f14;
+border:1px solid #1b2533;
+border-radius:8px;
+padding:10px;
+max-height:260px;
+overflow:auto;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:16px;
+}
+
+@media(max-width:900px){
+.grid{grid-template-columns:1fr}
+}
+
 </style>
+
 </head>
 
 <body>
 
-<header>Network Traffic Risk Analyzer</header>
+<header>
+Network Traffic Risk Analyzer
+</header>
 
 <main>
 
 <div class="card">
-<b>Загрузка датасета</b><br><br>
+
+<b>Загрузка датасета</b>
+<br><br>
+
 <input type="file" id="file">
 <button onclick="clearUI()">Очистить</button>
+
 </div>
 
 <div class="card">
+
 <b>Risk Score</b>
-<div class="bar"><div id="riskBar"></div></div>
+
+<div class="bar">
+<div id="riskBar"></div>
+</div>
+
 <div id="riskText">—</div>
+
 </div>
 
 <div class="grid">
 
 <div class="card">
+
 <b>Информация о датасете</b>
-<div id="info">Файл не загружен</div>
+
+<div id="info">
+Файл не загружен
+</div>
+
 </div>
 
 <div class="card">
+
 <b>Подозрительные токены</b>
-<div id="tokens">—</div>
+
+<div id="tokens">
+—
+</div>
+
 </div>
 
 </div>
@@ -59,117 +147,229 @@ pre{background:#0b0f14;border:1px solid #1b2533;border-radius:8px;padding:10px;m
 <div class="grid">
 
 <div class="card">
+
 <b>Частота подозрительных токенов</b>
+
 <canvas id="chart1"></canvas>
+
 </div>
 
 <div class="card">
+
 <b>Нормальный / подозрительный трафик</b>
+
 <canvas id="chart2"></canvas>
+
 </div>
 
 </div>
 
 <div class="card">
+
 <b>Превью данных</b>
+
 <pre id="preview"></pre>
+
 </div>
 
 </main>
 
 <script>
 
-const fileInput=document.getElementById("file")
-const preview=document.getElementById("preview")
-const info=document.getElementById("info")
-const tokensBox=document.getElementById("tokens")
-const riskBar=document.getElementById("riskBar")
-const riskText=document.getElementById("riskText")
+const fileInput = document.getElementById("file")
 
-let chart1=null
-let chart2=null
+const preview = document.getElementById("preview")
+
+const info = document.getElementById("info")
+
+const tokensBox = document.getElementById("tokens")
+
+const riskBar = document.getElementById("riskBar")
+
+const riskText = document.getElementById("riskText")
+
+let chart1 = null
+let chart2 = null
 
 fileInput.addEventListener("change",function(e){
 
-const file=e.target.files[0]
+const file = e.target.files[0]
+
 if(!file) return
 
-const reader=new FileReader()
+const reader = new FileReader()
 
-reader.onload=function(){
+reader.onload = function(){
 
-const text=reader.result
-const lines=text.split(/\r?\n/).slice(0,8000)
+const buffer = reader.result
 
-preview.textContent=lines.slice(0,80).join("\n")
+const text = new TextDecoder().decode(buffer)
 
-const tokens=["password","token","select","drop","<script","cmd.exe","powershell","scan","nmap","sqlmap","attack"]
+const lines = text.split(/\\r?\\n/).slice(0,8000)
 
-let suspicious=0
-let tokenHits={}
+preview.textContent = lines.slice(0,80).join("\\n")
+
+analyzeText(lines)
+
+try{
+analyzePCAP(buffer)
+}catch(e){
+console.log("PCAP parse skipped")
+}
+
+}
+
+reader.readAsArrayBuffer(file)
+
+})
+
+function analyzeText(lines){
+
+const tokens = [
+
+"password",
+"token",
+"select",
+"drop",
+"<script",
+"cmd.exe",
+"powershell",
+"scan",
+"nmap",
+"sqlmap",
+"attack"
+
+]
+
+let suspicious = 0
+let tokenHits = {}
 
 for(let l of lines){
 
-let s=l.toLowerCase()
+let s = l.toLowerCase()
 
 for(let t of tokens){
 
 if(s.includes(t)){
+
 suspicious++
-tokenHits[t]=(tokenHits[t]||0)+1
-}
+
+tokenHits[t] = (tokenHits[t]||0)+1
 
 }
 
 }
 
-const risk=Math.min(100,Math.round((suspicious/Math.max(lines.length,1))*450))
+}
 
-riskBar.style.width=risk+"%"
-riskText.textContent=risk+"%"
+const risk = Math.min(100,Math.round((suspicious/Math.max(lines.length,1))*450))
 
-tokensBox.innerHTML=Object.entries(tokenHits).map(x=>x[0]+" : "+x[1]).join("<br>") || "совпадений нет"
+riskBar.style.width = risk + "%"
+riskText.textContent = risk + "%"
 
-info.innerHTML="Размер файла: "+file.size+" bytes<br>Строк: "+lines.length+"<br>Подозрительных совпадений: "+suspicious
+tokensBox.innerHTML = Object.entries(tokenHits)
+.map(x=>x[0]+" : "+x[1])
+.join("<br>") || "совпадений нет"
+
+info.innerHTML =
+"Строк: "+lines.length+
+"<br>Подозрительных совпадений: "+suspicious
 
 drawCharts(tokenHits,suspicious,lines.length)
 
 }
 
-reader.readAsText(file)
-
-})
-
 function drawCharts(tokens,totalHits,totalLines){
 
-const labels=Object.keys(tokens)
-const values=Object.values(tokens)
+const labels = Object.keys(tokens)
+const values = Object.values(tokens)
 
 if(chart1) chart1.destroy()
 if(chart2) chart2.destroy()
 
-chart1=new Chart(document.getElementById("chart1"),{
+chart1 = new Chart(
+document.getElementById("chart1"),
+{
 type:"bar",
-data:{labels:labels,datasets:[{label:"Token frequency",data:values}]}
+data:{
+labels:labels,
+datasets:[
+{
+label:"Token frequency",
+data:values
+}
+]
+}
+}
+)
+
+chart2 = new Chart(
+document.getElementById("chart2"),
+{
+type:"doughnut",
+data:{
+labels:["Normal","Suspicious"],
+datasets:[
+{
+data:[Math.max(totalLines-totalHits,0),totalHits]
+}
+]
+}
+}
+)
+
+}
+
+function analyzePCAP(arrayBuffer){
+
+const parser = new PcapParser(arrayBuffer)
+
+let packets = 0
+let ipStats = {}
+
+parser.on("packet",function(pkt){
+
+packets++
+
+const data = new Uint8Array(pkt.data)
+
+if(data.length > 34){
+
+const src =
+data[26]+"."+data[27]+"."+data[28]+"."+data[29]
+
+const dst =
+data[30]+"."+data[31]+"."+data[32]+"."+data[33]
+
+ipStats[src] = (ipStats[src]||0)+1
+ipStats[dst] = (ipStats[dst]||0)+1
+
+}
+
 })
 
-chart2=new Chart(document.getElementById("chart2"),{
-type:"doughnut",
-data:{labels:["Normal","Suspicious"],datasets:[{data:[Math.max(totalLines-totalHits,0),totalHits]}]}
+parser.on("end",function(){
+
+console.log("Packets:",packets)
+console.log("IP stats:",ipStats)
+
 })
 
 }
 
 function clearUI(){
 
-preview.textContent=""
-info.textContent="Файл не загружен"
-tokensBox.textContent="—"
+preview.textContent = ""
 
-riskBar.style.width="0%"
-riskText.textContent="—"
+info.textContent = "Файл не загружен"
 
-fileInput.value=""
+tokensBox.textContent = "—"
+
+riskBar.style.width = "0%"
+
+riskText.textContent = "—"
+
+fileInput.value = ""
 
 if(chart1) chart1.destroy()
 if(chart2) chart2.destroy()
